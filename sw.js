@@ -1,5 +1,5 @@
 // NAIKKAN ANGKA INI SETIAP KALI ANDA UPDATE APLIKASI
-const CACHE_NAME = 'hygenix-v2'; 
+const CACHE_NAME = 'hygenix-v3'; 
 const urlsToCache = [
   './',
   './index.html',
