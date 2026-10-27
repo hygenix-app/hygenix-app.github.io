@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Hygenix Community</title>
 
-  <!-- PWA SETUP -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#10b981">
   <link rel="apple-touch-icon" href="icon.png">
@@ -57,14 +56,18 @@
     .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
     /* Proker Card */
-    .proker-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
-    .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .proker-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; }
+    .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-right: 30px; }
     .progress-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
     .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s; }
-    .proker-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--teks-muted); }
-    .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+    .proker-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--teks-muted); align-items: center; margin-top: 5px;}
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; }
     .badge-pending { background: #fef08a; color: #854d0e; }
+    .badge-proses { background: #dbeafe; color: #1e40af; }
     .badge-valid { background: #dcfce7; color: #166534; }
+    
+    /* Tombol Aksi Kecil (Hapus) */
+    .btn-hapus-kecil { position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--merah); cursor: pointer; padding: 5px; }
 
     /* KEUANGAN STYLES */
     .saldo-card { background: linear-gradient(135deg, var(--primary) 0%, #059669 100%); color: white; padding: 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
@@ -75,13 +78,13 @@
     .trx-info { flex: 1; }
     .trx-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
     .trx-date { font-size: 10px; color: var(--teks-muted); }
-    .trx-amount { font-size: 14px; font-weight: 700; }
+    .trx-amount { font-size: 14px; font-weight: 700; margin-right: 10px;}
     .trx-amount.masuk { color: var(--primary); }
     .trx-amount.keluar { color: var(--merah); }
 
     /* FEED AKSI STYLES */
-    .feed-card { background: var(--card); border-radius: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; overflow: hidden; }
-    .feed-header { display: flex; align-items: center; gap: 10px; padding: 12px; }
+    .feed-card { background: var(--card); border-radius: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; overflow: hidden; position: relative; }
+    .feed-header { display: flex; align-items: center; gap: 10px; padding: 12px; padding-right: 40px;}
     .feed-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; }
     .feed-info { flex: 1; }
     .feed-name { font-size: 13px; font-weight: 700; }
@@ -229,7 +232,11 @@
         <p style="font-size: 12px; color: var(--teks-muted); margin-bottom: 20px;" id="profilRole">...</p>
         <div style="background: white; border-radius: 16px; padding: 20px; text-align: left; border: 1px solid #e2e8f0; margin-bottom: 20px;">
           <p style="font-size: 12px; color: var(--teks-muted); margin-bottom: 5px;">Email Terdaftar</p>
-          <p style="font-size: 14px; font-weight: 600;" id="profilEmail">...</p>
+          <p style="font-size: 14px; font-weight: 600; margin-bottom: 15px;" id="profilEmail">...</p>
+          
+          <button onclick="bukaModalPassword()" style="width: 100%; padding: 10px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px;">
+            <i data-lucide="key" style="width: 16px;"></i> Ganti Password
+          </button>
         </div>
         <button onclick="logout()" style="width: 100%; padding: 14px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;">
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
@@ -330,9 +337,19 @@
   </div>
 </div>
 
+<div id="modalPassword" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header"><div class="modal-title">Ganti Password</div><button class="btn-close" onclick="tutupModalPassword()"><i data-lucide="x"></i></button></div>
+    <div class="admin-form" style="border:none; padding:0;">
+      <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Password Baru</label>
+      <input type="password" id="inputNewPassword" placeholder="Minimal 6 karakter">
+      <button class="btn-primary" id="btnSimpanPassword" onclick="simpanPassword()">Simpan Password Baru</button>
+    </div>
+  </div>
+</div>
+
 <!-- SCRIPT LOGIC -->
 <script>
-  // KONFIGURASI SUPABASE
   const SUPABASE_URL = 'https://konopkunbtcwnbbdiqxv.supabase.co'; 
   const SUPABASE_KEY = 'sb_publishable_LJHT38ry69jKpn8ux0I8SA_qtN0d-x3';
   
@@ -343,7 +360,7 @@
   let currentUserId = null;
   let radarChartInstance = null; 
 
-  // 1. CEK SESI & DATA USER
+  // 1. CEK SESI
   async function checkUserSession() {
     const { data: { session }, error } = await supabaseClient.auth.getSession();
     if (error || !session) { window.location.href = 'login.html'; return; }
@@ -360,7 +377,6 @@
       document.getElementById('headerAvatar').innerText = (profile.full_name || "U").charAt(0).toUpperCase();
       currentUserRole = profile.role;
 
-      // Tampilkan Menu Spesifik
       if (currentUserRole === 'admin') {
         document.getElementById('navAdmin').style.display = 'flex';
         loadAllUsers();
@@ -398,9 +414,31 @@
     if (prokers && prokers.length > 0) {
       dashTotal.innerText = prokers.length;
       prokers.forEach((p, index) => {
-        listProker.innerHTML += `<div class="proker-card"><div class="proker-title">${p.judul}</div><p style="font-size:11px; color:var(--teks-muted); margin-bottom:10px;">${p.deskripsi || '-'}</p><div class="badge badge-pending">${p.status}</div></div>`;
-        
-        if(index < 3) dashProker.innerHTML += `<div class="proker-card"><div class="proker-title">${p.judul}</div><div class="progress-container"><div class="progress-bar" style="width: 50%;"></div></div><div class="proker-meta"><span>Target: ${p.target_selesai || '-'}</span> <span>50%</span></div></div>`;
+        // Tentukan warna badge berdasarkan status
+        let badgeClass = 'badge-pending';
+        if(p.status === 'Berjalan') badgeClass = 'badge-proses';
+        if(p.status === 'Selesai') badgeClass = 'badge-valid';
+
+        // Tombol ubah status & hapus (hanya admin/ketua)
+        let adminBtn = '';
+        if (currentUserRole === 'admin' || currentUserRole === 'ketua') {
+           adminBtn = `<button class="btn-hapus-kecil" onclick="hapusProker('${p.id}')"><i data-lucide="trash-2" style="width:16px;"></i></button>`;
+        }
+
+        // Render list Proker dengan fitur ubah status
+        listProker.innerHTML += `
+          <div class="proker-card">
+            ${adminBtn}
+            <div class="proker-title">${p.judul}</div>
+            <p style="font-size:11px; color:var(--teks-muted); margin-bottom:10px;">${p.deskripsi || '-'}</p>
+            <div class="proker-meta">
+              <span class="badge ${badgeClass}" onclick="ubahStatusProker('${p.id}', '${p.status}')">${p.status} <i data-lucide="refresh-cw" style="width:10px; display:inline;"></i></span>
+              <span>Target: ${p.target_selesai || '-'}</span>
+            </div>
+          </div>
+        `;
+
+        if(index < 3) dashProker.innerHTML += `<div class="proker-card"><div class="proker-title">${p.judul}</div><div class="progress-container"><div class="progress-bar" style="width: ${p.status === 'Selesai' ? '100' : (p.status === 'Berjalan' ? '50' : '10')}%;"></div></div><div class="proker-meta"><span>${p.status}</span> <span>${p.status === 'Selesai' ? '100' : (p.status === 'Berjalan' ? '50' : '10')}%</span></div></div>`;
         
         dropdownProker.innerHTML += `<option value="${p.id}">${p.judul}</option>`;
       });
@@ -409,6 +447,7 @@
       listProker.innerHTML = '<p style="font-size:12px; text-align:center; color:#94a3b8;">Belum ada proker.</p>';
       dashProker.innerHTML = '<p style="font-size:12px; text-align:center; color:#94a3b8;">Belum ada proker.</p>';
     }
+    lucide.createIcons();
   }
 
   function bukaModalProker() { document.getElementById('modalProker').style.display = 'flex'; }
@@ -437,6 +476,27 @@
     btn.innerText = "Simpan Proker"; btn.disabled = false;
   }
 
+  // FITUR BARU: Ubah Status Proker
+  async function ubahStatusProker(id, currentStatus) {
+    if(currentUserRole !== 'admin' && currentUserRole !== 'ketua') return;
+    
+    let newStatus = 'Rencana';
+    if(currentStatus === 'Rencana') newStatus = 'Berjalan';
+    else if(currentStatus === 'Berjalan') newStatus = 'Selesai';
+    
+    const { error } = await supabaseClient.from('program_kerja').update({ status: newStatus }).eq('id', id);
+    if(error) alert("Gagal ubah status: " + error.message);
+    else loadDataProker();
+  }
+
+  // FITUR BARU: Hapus Proker
+  async function hapusProker(id) {
+    if(!confirm("Yakin ingin menghapus proker ini? Data laporan aksi terkait juga akan terhapus.")) return;
+    const { error } = await supabaseClient.from('program_kerja').delete().eq('id', id);
+    if(error) alert("Gagal menghapus: " + error.message);
+    else loadDataProker();
+  }
+
   // 3. FUNGSI KEUANGAN
   async function loadDataKeuangan() {
     const { data: trx } = await supabaseClient.from('keuangan').select('*').order('tanggal', { ascending: false }).order('created_at', { ascending: false });
@@ -448,7 +508,13 @@
         if(t.tipe === 'Pemasukan') totalMasuk += t.jumlah; else totalKeluar += t.jumlah;
         const nominal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(t.jumlah);
         const isMasuk = t.tipe === 'Pemasukan';
-        list.innerHTML += `<div class="trx-item"><div class="trx-info"><div class="trx-title">${t.keterangan}</div><div class="trx-date">${t.tanggal}</div></div><div class="trx-amount ${isMasuk ? 'masuk' : 'keluar'}">${isMasuk ? '+' : '-'} ${nominal}</div></div>`;
+
+        // Fitur Hapus Transaksi
+        let btnHapus = (currentUserRole === 'admin' || currentUserRole === 'bendahara') 
+          ? `<button onclick="hapusTransaksi('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; margin-left:10px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` 
+          : '';
+
+        list.innerHTML += `<div class="trx-item"><div class="trx-info"><div class="trx-title">${t.keterangan}</div><div class="trx-date">${t.tanggal}</div></div><div style="display:flex; align-items:center;"><div class="trx-amount ${isMasuk ? 'masuk' : 'keluar'}">${isMasuk ? '+' : '-'} ${nominal}</div>${btnHapus}</div></div>`;
       });
     } else list.innerHTML = '<p style="font-size:12px; text-align:center; color:#94a3b8;">Belum ada transaksi.</p>';
 
@@ -456,6 +522,7 @@
     document.getElementById('totalSaldo').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(saldo);
     document.getElementById('totalMasuk').innerText = "Masuk: " + new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totalMasuk);
     document.getElementById('totalKeluar').innerText = "Keluar: " + new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totalKeluar);
+    lucide.createIcons();
   }
 
   function bukaModalKeuangan() { document.getElementById('modalKeuangan').style.display = 'flex'; }
@@ -481,6 +548,14 @@
     btn.innerText = "Simpan Transaksi"; btn.disabled = false;
   }
 
+  // FITUR BARU: Hapus Transaksi Keuangan
+  async function hapusTransaksi(id) {
+    if(!confirm("Yakin ingin menghapus catatan transaksi ini?")) return;
+    const { error } = await supabaseClient.from('keuangan').delete().eq('id', id);
+    if(error) alert("Gagal menghapus: " + error.message);
+    else loadDataKeuangan();
+  }
+
   // 4. FUNGSI AKSI NYATA
   async function loadFeedAksi() {
     const { data: feeds, error } = await supabaseClient
@@ -501,11 +576,17 @@
         const judulProker = f.program_kerja ? f.program_kerja.judul : 'Umum';
         const isMenunggu = f.status_validasi === 'Menunggu';
         const badgeColor = isMenunggu ? 'badge-pending' : 'badge-valid';
+        
         const canValidate = (currentUserRole === 'admin' || currentUserRole === 'guru') && isMenunggu;
         const btnValidasi = canValidate ? `<button class="btn-validasi" onclick="validasiLaporan('${f.id}')">Validasi Laporan</button>` : '';
+        
+        // Fitur Hapus Laporan (jika salah upload)
+        const canDelete = (currentUserRole === 'admin' || f.user_id === currentUserId);
+        const btnHapus = canDelete ? `<button onclick="hapusLaporan('${f.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; position:absolute; top:12px; right:12px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` : '';
 
         list.innerHTML += `
           <div class="feed-card">
+            ${btnHapus}
             <div class="feed-header">
               <div class="feed-avatar">${namaPelapor.charAt(0)}</div>
               <div class="feed-info">
@@ -528,6 +609,7 @@
       dashTotalAksi.innerText = "0";
       list.innerHTML = '<p style="font-size:12px; text-align:center; color:#94a3b8;">Belum ada aksi terlapor.</p>';
     }
+    lucide.createIcons();
   }
 
   function bukaModalAksi() { document.getElementById('modalAksi').style.display = 'flex'; }
@@ -576,6 +658,14 @@
     const { error } = await supabaseClient.from('laporan_aksi').update({ status_validasi: 'Valid' }).eq('id', id);
     if (error) alert("Gagal validasi: " + error.message);
     else { alert("Laporan berhasil divalidasi!"); loadFeedAksi(); }
+  }
+
+  // FITUR BARU: Hapus Laporan Aksi
+  async function hapusLaporan(id) {
+    if(!confirm("Yakin ingin menghapus laporan ini?")) return;
+    const { error } = await supabaseClient.from('laporan_aksi').delete().eq('id', id);
+    if (error) alert("Gagal menghapus laporan: " + error.message);
+    else { alert("Laporan dihapus."); loadFeedAksi(); }
   }
 
   // 5. FUNGSI EVALUASI (RADAR CHART DINAMIS)
@@ -730,6 +820,28 @@
     } catch (err) {
       alert("Gagal reset password: " + err.message);
     }
+  }
+
+  function bukaModalPassword() { document.getElementById('modalPassword').style.display = 'flex'; }
+  function tutupModalPassword() { document.getElementById('modalPassword').style.display = 'none'; }
+
+  async function simpanPassword() {
+    const newPass = document.getElementById('inputNewPassword').value;
+    const btn = document.getElementById('btnSimpanPassword');
+
+    if(newPass.length < 6) { alert("Password minimal 6 karakter!"); return; }
+
+    btn.innerText = "Menyimpan..."; btn.disabled = true;
+
+    const { data, error } = await supabaseClient.auth.updateUser({ password: newPass });
+
+    if(error) alert("Gagal ganti password: " + error.message);
+    else {
+      alert("Password berhasil diubah!");
+      document.getElementById('inputNewPassword').value = '';
+      tutupModalPassword();
+    }
+    btn.innerText = "Simpan Password Baru"; btn.disabled = false;
   }
 
   // 7. UTILITAS UI
