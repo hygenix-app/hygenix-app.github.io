@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Hygenix Community</title>
 
+  <!-- PWA SETUP -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10b981">
+  <link rel="apple-touch-icon" href="icon.png">
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -193,13 +198,11 @@
       <h2 class="section-title"><i data-lucide="bar-chart-2"></i> Rapor Organisasi</h2>
       <div class="chart-container"><canvas id="radarChart"></canvas></div>
       
-      <!-- Area Catatan Evaluasi -->
       <div id="evalNoteContainer" style="display:none; margin-bottom: 20px;">
         <h3 style="font-size:12px; font-weight:700; margin-bottom:5px;">Catatan Pembimbing:</h3>
         <div class="eval-note" id="evalNoteText">Belum ada catatan.</div>
       </div>
 
-      <!-- Tombol Input Nilai (Hanya Admin/Guru) -->
       <button id="btnBeriNilai" class="btn-primary" style="display:none; background:var(--kuning);" onclick="bukaModalEvaluasi()">
         <i data-lucide="edit" style="width:16px; display:inline; vertical-align:middle;"></i> Beri Nilai Evaluasi
       </button>
@@ -338,7 +341,7 @@
 
   let currentUserRole = 'anggota';
   let currentUserId = null;
-  let radarChartInstance = null; // Simpan instance chart agar bisa diupdate
+  let radarChartInstance = null; 
 
   // 1. CEK SESI & DATA USER
   async function checkUserSession() {
@@ -372,7 +375,7 @@
       
       loadDataProker();
       loadFeedAksi(); 
-      loadEvaluasi(); // Panggil data evaluasi
+      loadEvaluasi(); 
       
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('trxTanggal').value = today;
@@ -590,7 +593,6 @@
       document.getElementById('evalNoteText').innerText = catatan;
     }
 
-    // Render / Update Radar Chart
     const ctx = document.getElementById('radarChart').getContext('2d');
     if(radarChartInstance) {
       radarChartInstance.data.datasets[0].data = skor;
@@ -642,7 +644,7 @@
     else {
       alert("Evaluasi berhasil disimpan!");
       tutupModalEvaluasi();
-      loadEvaluasi(); // Refresh chart
+      loadEvaluasi(); 
     }
     btn.innerText = "Simpan Penilaian"; btn.disabled = false;
   }
@@ -749,5 +751,19 @@
   // Jalankan pengecekan saat halaman dimuat
   checkUserSession();
 </script>
+
+<!-- DAFTARKAN SERVICE WORKER (PWA) -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js').then(function(registration) {
+        console.log('Service Worker aktif:', registration.scope);
+      }).catch(function(error) {
+        console.log('Service Worker gagal:', error);
+      });
+    });
+  }
+</script>
+
 </body>
 </html>
