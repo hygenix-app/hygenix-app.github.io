@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Hygenix Community</title>
 
+  <!-- PWA SETUP -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#10b981">
   <link rel="apple-touch-icon" href="icon.png">
@@ -414,18 +415,15 @@
     if (prokers && prokers.length > 0) {
       dashTotal.innerText = prokers.length;
       prokers.forEach((p, index) => {
-        // Tentukan warna badge berdasarkan status
         let badgeClass = 'badge-pending';
         if(p.status === 'Berjalan') badgeClass = 'badge-proses';
         if(p.status === 'Selesai') badgeClass = 'badge-valid';
 
-        // Tombol ubah status & hapus (hanya admin/ketua)
         let adminBtn = '';
         if (currentUserRole === 'admin' || currentUserRole === 'ketua') {
            adminBtn = `<button class="btn-hapus-kecil" onclick="hapusProker('${p.id}')"><i data-lucide="trash-2" style="width:16px;"></i></button>`;
         }
 
-        // Render list Proker dengan fitur ubah status
         listProker.innerHTML += `
           <div class="proker-card">
             ${adminBtn}
@@ -476,10 +474,8 @@
     btn.innerText = "Simpan Proker"; btn.disabled = false;
   }
 
-  // FITUR BARU: Ubah Status Proker
   async function ubahStatusProker(id, currentStatus) {
     if(currentUserRole !== 'admin' && currentUserRole !== 'ketua') return;
-    
     let newStatus = 'Rencana';
     if(currentStatus === 'Rencana') newStatus = 'Berjalan';
     else if(currentStatus === 'Berjalan') newStatus = 'Selesai';
@@ -489,7 +485,6 @@
     else loadDataProker();
   }
 
-  // FITUR BARU: Hapus Proker
   async function hapusProker(id) {
     if(!confirm("Yakin ingin menghapus proker ini? Data laporan aksi terkait juga akan terhapus.")) return;
     const { error } = await supabaseClient.from('program_kerja').delete().eq('id', id);
@@ -509,7 +504,6 @@
         const nominal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(t.jumlah);
         const isMasuk = t.tipe === 'Pemasukan';
 
-        // Fitur Hapus Transaksi
         let btnHapus = (currentUserRole === 'admin' || currentUserRole === 'bendahara') 
           ? `<button onclick="hapusTransaksi('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; margin-left:10px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` 
           : '';
@@ -548,7 +542,6 @@
     btn.innerText = "Simpan Transaksi"; btn.disabled = false;
   }
 
-  // FITUR BARU: Hapus Transaksi Keuangan
   async function hapusTransaksi(id) {
     if(!confirm("Yakin ingin menghapus catatan transaksi ini?")) return;
     const { error } = await supabaseClient.from('keuangan').delete().eq('id', id);
@@ -580,7 +573,6 @@
         const canValidate = (currentUserRole === 'admin' || currentUserRole === 'guru') && isMenunggu;
         const btnValidasi = canValidate ? `<button class="btn-validasi" onclick="validasiLaporan('${f.id}')">Validasi Laporan</button>` : '';
         
-        // Fitur Hapus Laporan (jika salah upload)
         const canDelete = (currentUserRole === 'admin' || f.user_id === currentUserId);
         const btnHapus = canDelete ? `<button onclick="hapusLaporan('${f.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; position:absolute; top:12px; right:12px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` : '';
 
@@ -660,7 +652,6 @@
     else { alert("Laporan berhasil divalidasi!"); loadFeedAksi(); }
   }
 
-  // FITUR BARU: Hapus Laporan Aksi
   async function hapusLaporan(id) {
     if(!confirm("Yakin ingin menghapus laporan ini?")) return;
     const { error } = await supabaseClient.from('laporan_aksi').delete().eq('id', id);
@@ -864,12 +855,25 @@
   checkUserSession();
 </script>
 
-<!-- DAFTARKAN SERVICE WORKER (PWA) -->
+<!-- DAFTARKAN SERVICE WORKER (PWA AUTO-UPDATE) -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('./sw.js').then(function(registration) {
-        console.log('Service Worker aktif:', registration.scope);
+        // Deteksi jika ada Service Worker baru yang siap
+        registration.onupdatefound = function() {
+          const installingWorker = registration.installing;
+          installingWorker.onstatechange = function() {
+            if (installingWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                // Jika sudah ada Service Worker lama, berarti ini update baru
+                console.log('Update baru tersedia. Memuat ulang halaman...');
+                alert('Aplikasi telah diperbarui! Halaman akan dimuat ulang.');
+                window.location.reload();
+              }
+            }
+          };
+        };
       }).catch(function(error) {
         console.log('Service Worker gagal:', error);
       });
