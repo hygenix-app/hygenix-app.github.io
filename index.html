@@ -2,10 +2,9 @@
 <html lang="id">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Hygenix Community</title>
 
-  <!-- PWA SETUP -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#10b981">
   <link rel="apple-touch-icon" href="icon.png">
@@ -24,26 +23,67 @@
       --bg: #f8fafc;
       --card: #ffffff;
       --merah: #ef4444;
-      --merah-light: #fef2f2;
       --kuning: #f59e0b;
       --biru: #3b82f6;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    body { background: #e2e8f0; color: var(--teks); display: flex; justify-content: center; }
     
-    #app { width: 100%; max-width: 480px; height: 100vh; display: flex; flex-direction: column; background: var(--bg); position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+    /* FIX 1: LAYOUT TERKUNCI */
+    html, body { height: 100%; overflow: hidden; }
+    
+    /* FIX 3: ANTI COPY TEXT */
+    body { 
+      background: #e2e8f0; 
+      color: var(--teks); 
+      display: flex; 
+      justify-content: center;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
 
-    /* Header */
-    .header { background: var(--primary); padding: 15px 20px 25px 20px; color: white; border-radius: 0 0 24px 24px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); display: flex; justify-content: space-between; align-items: center; }
+    input, textarea { -webkit-user-select: text; user-select: text; }
+    
+    #app { 
+      width: 100%; 
+      max-width: 480px; 
+      height: 100%; 
+      display: flex; 
+      flex-direction: column; 
+      background: var(--bg); 
+      position: relative; 
+      box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+    }
+
+    /* Header Fixed */
+    .header { 
+      flex-shrink: 0; /* Mencegah header mengecil */
+      background: var(--primary); 
+      padding: 15px 20px 25px 20px; 
+      color: white; 
+      border-radius: 0 0 24px 24px; 
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      z-index: 10;
+    }
     .header-brand { display: flex; align-items: center; gap: 10px; }
     .header-brand img { width: 32px; height: 32px; background: white; border-radius: 8px; padding: 3px; }
     .header-title h1 { font-size: 18px; font-weight: 700; margin-bottom: 2px; line-height: 1; }
     .header-title p { font-size: 10px; opacity: 0.9; letter-spacing: 1px; }
     .header-profile { width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; font-size: 14px; }
 
-    /* Konten Utama */
-    .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 80px; }
+    /* Konten Scrollable */
+    .content { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 20px; 
+      padding-bottom: 100px; 
+      -webkit-overflow-scrolling: touch;
+    }
+    
     .tab-pane { display: none; animation: fadeIn 0.3s; }
     .tab-pane.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -62,12 +102,14 @@
     .progress-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
     .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s; }
     .proker-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--teks-muted); align-items: center; margin-top: 5px;}
-    .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; }
+    
+    .badge { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; gap: 5px; transition: 0.2s; }
     .badge-pending { background: #fef08a; color: #854d0e; }
     .badge-proses { background: #dbeafe; color: #1e40af; }
     .badge-valid { background: #dcfce7; color: #166534; }
-    
-    /* Tombol Aksi Kecil (Hapus) */
+    .badge-clickable { cursor: pointer; }
+    .badge-clickable:active { transform: scale(0.95); }
+
     .btn-hapus-kecil { position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--merah); cursor: pointer; padding: 5px; }
 
     /* KEUANGAN STYLES */
@@ -111,14 +153,27 @@
     .user-role-select { padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 11px; font-family: inherit; font-weight: bold; background: #f8fafc; }
     .btn-reset { background: var(--merah); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
-    /* Bottom Navigation */
-    .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 100; overflow-x: auto; }
+    /* Bottom Navigation Fixed */
+    .bottom-nav { 
+      position: fixed; /* Mengunci posisi di bawah */
+      bottom: 0; 
+      width: 100%; 
+      max-width: 480px; 
+      background: var(--card); 
+      display: flex; 
+      justify-content: space-around; 
+      padding: 10px 0; 
+      border-radius: 24px 24px 0 0; 
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.05); 
+      z-index: 100; 
+      overflow-x: auto; 
+    }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--teks-muted); font-size: 10px; font-weight: 600; cursor: pointer; padding: 5px 10px; transition: 0.2s; min-width: 65px; }
     .nav-item.active { color: var(--primary); }
     .nav-item i { width: 22px; height: 22px; }
 
     /* Floating Action Button (FAB) */
-    .fab { position: absolute; bottom: 80px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; display: none; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); cursor: pointer; z-index: 99; font-size: 24px; border: none; }
+    .fab { position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; display: none; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); cursor: pointer; z-index: 99; font-size: 24px; border: none; }
     .fab.merah { background: var(--merah); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
     .fab.biru { background: var(--biru); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
 
@@ -129,12 +184,27 @@
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .modal-title { font-size: 16px; font-weight: 700; }
     .btn-close { background: none; border: none; cursor: pointer; color: var(--teks-muted); }
+
+    /* FIX 2: CUSTOM CONFIRM & TOAST (Pengganti Alert Browser) */
+    .custom-confirm { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
+    .confirm-box { background: white; width: 100%; max-width: 320px; border-radius: 16px; padding: 20px; text-align: center; animation: popIn 0.2s; }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .confirm-icon { width: 50px; height: 50px; background: #fee2e2; color: var(--merah); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; }
+    .confirm-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .confirm-msg { font-size: 12px; color: var(--teks-muted); margin-bottom: 20px; line-height: 1.5; }
+    .confirm-btns { display: flex; gap: 10px; }
+    .btn-confirm-cancel { flex: 1; padding: 10px; background: #e2e8f0; color: var(--teks); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-confirm-ok { flex: 1; padding: 10px; background: var(--merah); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+    .custom-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 20px; border-radius: 30px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 10px; z-index: 10000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s; opacity: 0; pointer-events: none; }
+    .custom-toast.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
+    .custom-toast.error { background: var(--merah); }
   </style>
 </head>
 <body>
 
 <div id="app">
-  <!-- HEADER -->
+  <!-- HEADER (Fixed) -->
   <header class="header">
     <div class="header-brand">
       <img src="icon.png" alt="Logo" onerror="this.src='https://via.placeholder.com/32?text=H'">
@@ -146,7 +216,7 @@
     <div class="header-profile" id="headerAvatar" onclick="switchTab('profil', document.querySelectorAll('.nav-item')[6])">?</div>
   </header>
 
-  <!-- KONTEN -->
+  <!-- KONTEN UTAMA (Scrollable) -->
   <main class="content">
     
     <!-- TAB 1: DASHBOARD -->
@@ -252,7 +322,7 @@
   <button class="fab merah" id="fabKeuangan" onclick="bukaModalKeuangan()"><i data-lucide="plus"></i></button>
   <button class="fab biru" id="fabAksi" onclick="bukaModalAksi()"><i data-lucide="camera"></i></button>
 
-  <!-- BOTTOM NAVIGATION -->
+  <!-- BOTTOM NAVIGATION (Fixed) -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('dashboard', this)"><i data-lucide="home"></i> Home</div>
     <div class="nav-item" onclick="switchTab('proker', this)"><i data-lucide="clipboard-list"></i> Proker</div>
@@ -265,7 +335,7 @@
 
 </div>
 
-<!-- MODALS -->
+<!-- MODALS BAWAAN -->
 <div id="modalProker" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header"><div class="modal-title">Tambah Proker Baru</div><button class="btn-close" onclick="tutupModalProker()"><i data-lucide="x"></i></button></div>
@@ -349,6 +419,25 @@
   </div>
 </div>
 
+<!-- CUSTOM CONFIRM & TOAST -->
+<div id="customConfirm" class="custom-confirm">
+  <div class="confirm-box">
+    <div class="confirm-icon"><i data-lucide="alert-triangle" style="width:24px; height:24px;"></i></div>
+    <div class="confirm-title" id="confirmTitle">Konfirmasi</div>
+    <div class="confirm-msg" id="confirmMsg">Apakah Anda yakin?</div>
+    <div class="confirm-btns">
+      <button class="btn-confirm-cancel" onclick="tutupConfirm()">Batal</button>
+      <button class="btn-confirm-ok" id="btnConfirmOk" onclick="eksekusiConfirm()">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div id="customToast" class="custom-toast">
+  <i data-lucide="check-circle" id="toastIcon" style="width:20px; height:20px;"></i>
+  <span id="toastMsg">Berhasil!</span>
+</div>
+
+
 <!-- SCRIPT LOGIC -->
 <script>
   const SUPABASE_URL = 'https://konopkunbtcwnbbdiqxv.supabase.co'; 
@@ -360,6 +449,48 @@
   let currentUserRole = 'anggota';
   let currentUserId = null;
   let radarChartInstance = null; 
+  let confirmCallback = null;
+
+  // FUNGSI TOAST
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById('customToast');
+    const icon = document.getElementById('toastIcon');
+    const msg = document.getElementById('toastMsg');
+    
+    msg.innerText = message;
+    if(type === 'error') {
+      toast.classList.add('error');
+      icon.setAttribute('data-lucide', 'x-circle');
+    } else {
+      toast.classList.remove('error');
+      icon.setAttribute('data-lucide', 'check-circle');
+    }
+    lucide.createIcons();
+    
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+  }
+
+  // FUNGSI KONFIRMASI
+  function showConfirm(message, callback, title = "Konfirmasi") {
+    document.getElementById('confirmTitle').innerText = title;
+    document.getElementById('confirmMsg').innerText = message;
+    document.getElementById('customConfirm').style.display = 'flex';
+    confirmCallback = callback;
+  }
+
+  function tutupConfirm() {
+    document.getElementById('customConfirm').style.display = 'none';
+    confirmCallback = null;
+  }
+
+  function eksekusiConfirm() {
+    if (confirmCallback) {
+      const cb = confirmCallback;
+      tutupConfirm();
+      cb();
+    }
+  }
 
   // 1. CEK SESI
   async function checkUserSession() {
@@ -419,6 +550,11 @@
         if(p.status === 'Berjalan') badgeClass = 'badge-proses';
         if(p.status === 'Selesai') badgeClass = 'badge-valid';
 
+        const canChangeStatus = (currentUserRole === 'admin' || currentUserRole === 'ketua' || currentUserRole === 'guru');
+        const onclickStatus = canChangeStatus ? `onclick="ubahStatusProker('${p.id}', '${p.status}')"` : '';
+        const cursorStyle = canChangeStatus ? 'badge-clickable' : '';
+        const iconRefresh = canChangeStatus ? `<i data-lucide="refresh-cw" style="width:10px; display:inline;"></i>` : '';
+
         let adminBtn = '';
         if (currentUserRole === 'admin' || currentUserRole === 'ketua') {
            adminBtn = `<button class="btn-hapus-kecil" onclick="hapusProker('${p.id}')"><i data-lucide="trash-2" style="width:16px;"></i></button>`;
@@ -430,7 +566,7 @@
             <div class="proker-title">${p.judul}</div>
             <p style="font-size:11px; color:var(--teks-muted); margin-bottom:10px;">${p.deskripsi || '-'}</p>
             <div class="proker-meta">
-              <span class="badge ${badgeClass}" onclick="ubahStatusProker('${p.id}', '${p.status}')">${p.status} <i data-lucide="refresh-cw" style="width:10px; display:inline;"></i></span>
+              <span class="badge ${badgeClass} ${cursorStyle}" ${onclickStatus}>${p.status} ${iconRefresh}</span>
               <span>Target: ${p.target_selesai || '-'}</span>
             </div>
           </div>
@@ -457,39 +593,41 @@
     const target = document.getElementById('prokerTanggal').value;
     const btn = document.getElementById('btnSimpanProker');
 
-    if(!judul) { alert("Judul proker wajib diisi!"); return; }
+    if(!judul) { showToast("Judul proker wajib diisi!", "error"); return; }
     btn.innerText = "Menyimpan..."; btn.disabled = true;
 
     const { error } = await supabaseClient.from('program_kerja').insert([{
       judul: judul, deskripsi: deskripsi, target_selesai: target || null, status: 'Rencana', created_by: currentUserId
     }]);
 
-    if(error) alert("Gagal menyimpan: " + error.message);
+    if(error) showToast("Gagal menyimpan: " + error.message, "error");
     else {
       document.getElementById('prokerJudul').value = '';
       document.getElementById('prokerDesk').value = '';
       document.getElementById('prokerTanggal').value = '';
       tutupModalProker(); loadDataProker();
+      showToast("Proker berhasil ditambahkan!");
     }
     btn.innerText = "Simpan Proker"; btn.disabled = false;
   }
 
   async function ubahStatusProker(id, currentStatus) {
-    if(currentUserRole !== 'admin' && currentUserRole !== 'ketua') return;
+    if(currentUserRole !== 'admin' && currentUserRole !== 'ketua' && currentUserRole !== 'guru') return;
     let newStatus = 'Rencana';
     if(currentStatus === 'Rencana') newStatus = 'Berjalan';
     else if(currentStatus === 'Berjalan') newStatus = 'Selesai';
     
     const { error } = await supabaseClient.from('program_kerja').update({ status: newStatus }).eq('id', id);
-    if(error) alert("Gagal ubah status: " + error.message);
+    if(error) showToast("Gagal ubah status: " + error.message, "error");
     else loadDataProker();
   }
 
-  async function hapusProker(id) {
-    if(!confirm("Yakin ingin menghapus proker ini? Data laporan aksi terkait juga akan terhapus.")) return;
-    const { error } = await supabaseClient.from('program_kerja').delete().eq('id', id);
-    if(error) alert("Gagal menghapus: " + error.message);
-    else loadDataProker();
+  function hapusProker(id) {
+    showConfirm("Yakin ingin menghapus proker ini? Data laporan aksi terkait juga akan terhapus.", async () => {
+      const { error } = await supabaseClient.from('program_kerja').delete().eq('id', id);
+      if(error) showToast("Gagal menghapus: " + error.message, "error");
+      else { loadDataProker(); showToast("Proker dihapus."); }
+    }, "Hapus Proker");
   }
 
   // 3. FUNGSI KEUANGAN
@@ -529,24 +667,26 @@
     const tgl = document.getElementById('trxTanggal').value;
     const btn = document.getElementById('btnSimpanKeuangan');
 
-    if(!jumlah || !ket || !tgl) { alert("Semua kolom wajib diisi!"); return; }
+    if(!jumlah || !ket || !tgl) { showToast("Semua kolom wajib diisi!", "error"); return; }
     btn.innerText = "Menyimpan..."; btn.disabled = true;
 
     const { error } = await supabaseClient.from('keuangan').insert([{ tipe: tipe, jumlah: parseInt(jumlah), keterangan: ket, tanggal: tgl, dicatat_oleh: currentUserId }]);
 
-    if(error) alert("Gagal menyimpan: " + error.message);
+    if(error) showToast("Gagal menyimpan: " + error.message, "error");
     else {
       document.getElementById('trxJumlah').value = ''; document.getElementById('trxKet').value = '';
       tutupModalKeuangan(); loadDataKeuangan();
+      showToast("Transaksi disimpan!");
     }
     btn.innerText = "Simpan Transaksi"; btn.disabled = false;
   }
 
-  async function hapusTransaksi(id) {
-    if(!confirm("Yakin ingin menghapus catatan transaksi ini?")) return;
-    const { error } = await supabaseClient.from('keuangan').delete().eq('id', id);
-    if(error) alert("Gagal menghapus: " + error.message);
-    else loadDataKeuangan();
+  function hapusTransaksi(id) {
+    showConfirm("Yakin ingin menghapus catatan transaksi ini?", async () => {
+      const { error } = await supabaseClient.from('keuangan').delete().eq('id', id);
+      if(error) showToast("Gagal menghapus: " + error.message, "error");
+      else { loadDataKeuangan(); showToast("Transaksi dihapus."); }
+    }, "Hapus Transaksi");
   }
 
   // 4. FUNGSI AKSI NYATA
@@ -613,9 +753,9 @@
     const deskripsi = document.getElementById('aksiDesk').value;
     const btn = document.getElementById('btnSimpanAksi');
 
-    if(!prokerId) { alert("Pilih Program Kerja terlebih dahulu!"); return; }
-    if(fileInput.files.length === 0) { alert("Foto bukti wajib diunggah!"); return; }
-    if(!deskripsi) { alert("Deskripsi kegiatan wajib diisi!"); return; }
+    if(!prokerId) { showToast("Pilih Program Kerja terlebih dahulu!", "error"); return; }
+    if(fileInput.files.length === 0) { showToast("Foto bukti wajib diunggah!", "error"); return; }
+    if(!deskripsi) { showToast("Deskripsi kegiatan wajib diisi!", "error"); return; }
 
     btn.innerText = "Mengunggah Foto..."; btn.disabled = true;
 
@@ -634,32 +774,34 @@
 
       if (dbError) throw dbError;
 
-      alert("Laporan Aksi berhasil dikirim!");
+      showToast("Laporan Aksi berhasil dikirim!");
       document.getElementById('aksiDesk').value = ''; fileInput.value = '';
       tutupModalAksi(); loadFeedAksi(); 
 
     } catch (err) {
-      alert("Gagal mengirim laporan: " + err.message);
+      showToast("Gagal mengirim laporan: " + err.message, "error");
     } finally {
       btn.innerText = "Kirim Laporan"; btn.disabled = false;
     }
   }
 
-  async function validasiLaporan(id) {
-    if(!confirm("Validasi laporan ini?")) return;
-    const { error } = await supabaseClient.from('laporan_aksi').update({ status_validasi: 'Valid' }).eq('id', id);
-    if (error) alert("Gagal validasi: " + error.message);
-    else { alert("Laporan berhasil divalidasi!"); loadFeedAksi(); }
+  function validasiLaporan(id) {
+    showConfirm("Validasi laporan ini? Pastikan foto dan deskripsi sudah sesuai.", async () => {
+      const { error } = await supabaseClient.from('laporan_aksi').update({ status_validasi: 'Valid' }).eq('id', id);
+      if (error) showToast("Gagal validasi: " + error.message, "error");
+      else { showToast("Laporan berhasil divalidasi!"); loadFeedAksi(); }
+    }, "Validasi Laporan");
   }
 
-  async function hapusLaporan(id) {
-    if(!confirm("Yakin ingin menghapus laporan ini?")) return;
-    const { error } = await supabaseClient.from('laporan_aksi').delete().eq('id', id);
-    if (error) alert("Gagal menghapus laporan: " + error.message);
-    else { alert("Laporan dihapus."); loadFeedAksi(); }
+  function hapusLaporan(id) {
+    showConfirm("Yakin ingin menghapus laporan ini?", async () => {
+      const { error } = await supabaseClient.from('laporan_aksi').delete().eq('id', id);
+      if (error) showToast("Gagal menghapus laporan: " + error.message, "error");
+      else { showToast("Laporan dihapus."); loadFeedAksi(); }
+    }, "Hapus Laporan");
   }
 
-  // 5. FUNGSI EVALUASI (RADAR CHART DINAMIS)
+  // 5. FUNGSI EVALUASI
   async function loadEvaluasi() {
     const { data: evalData } = await supabaseClient.from('evaluasi').select('*').order('created_at', { ascending: false }).limit(1).single();
 
@@ -712,18 +854,13 @@
     btn.innerText = "Menyimpan..."; btn.disabled = true;
 
     const { error } = await supabaseClient.from('evaluasi').insert([{
-      manajemen: manajemen,
-      proker: proker,
-      kaderisasi: kaderisasi,
-      aksi_nyata: aksi,
-      pelaporan: pelaporan,
-      catatan: catatan,
-      dinilai_oleh: currentUserId
+      manajemen: manajemen, proker: proker, kaderisasi: kaderisasi,
+      aksi_nyata: aksi, pelaporan: pelaporan, catatan: catatan, dinilai_oleh: currentUserId
     }]);
 
-    if(error) alert("Gagal menyimpan evaluasi: " + error.message);
+    if(error) showToast("Gagal menyimpan evaluasi: " + error.message, "error");
     else {
-      alert("Evaluasi berhasil disimpan!");
+      showToast("Evaluasi berhasil disimpan!");
       tutupModalEvaluasi();
       loadEvaluasi(); 
     }
@@ -744,6 +881,10 @@
           <option value="guru" ${u.role === 'guru' ? 'selected' : ''}>Guru</option>
           <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
         `;
+
+        // Catatan: Logika tombol Reset (hide) belum diimplementasikan di Batch 1. Ini masih menggunakan logika lama.
+        let btnReset = `<button class="btn-reset" onclick="resetPassword('${u.id}')">Reset</button>`;
+
         listContainer.innerHTML += `
           <div class="user-item">
             <div class="user-info">
@@ -752,12 +893,13 @@
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <select class="user-role-select" onchange="ubahRole('${u.id}', this.value)">${roleOptions}</select>
-              <button class="btn-reset" onclick="resetPassword('${u.id}')">Reset</button>
+              ${btnReset}
             </div>
           </div>
         `;
       });
     }
+    lucide.createIcons();
   }
 
   async function tambahPengguna() {
@@ -765,7 +907,7 @@
     const email = document.getElementById('newEmail').value;
     const btn = document.getElementById('btnBuatAkun'); 
 
-    if(!nama || !email) { alert("Nama dan Email wajib diisi!"); return; }
+    if(!nama || !email) { showToast("Nama dan Email wajib diisi!", "error"); return; }
 
     const defaultPassword = "hygenix2026"; 
     btn.innerText = "Membuat Akun..."; btn.disabled = true;
@@ -778,13 +920,13 @@
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      alert(`Akun berhasil dibuat!\n\nEmail: ${email}\nPassword: ${defaultPassword}`);
+      showToast(`Akun dibuat! Pass: ${defaultPassword}`);
       document.getElementById('newName').value = '';
       document.getElementById('newEmail').value = '';
       loadAllUsers();
 
     } catch (err) {
-      alert("Gagal membuat akun: " + err.message);
+      showToast("Gagal membuat akun: " + err.message, "error");
     } finally {
       btn.innerText = "Buat Akun"; btn.disabled = false;
     }
@@ -792,25 +934,27 @@
 
   async function ubahRole(userId, newRole) {
     const { error } = await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId);
-    if (error) alert("Gagal ubah role: " + error.message);
-    else alert("Role berhasil diubah menjadi " + newRole.toUpperCase());
+    if (error) showToast("Gagal ubah role: " + error.message, "error");
+    else showToast("Role diubah menjadi " + newRole.toUpperCase());
   }
 
-  async function resetPassword(userId) {
-    if(!confirm("Yakin ingin mereset password user ini menjadi (hygenix2026)?")) return;
+  function resetPassword(userId) {
+    showConfirm("Yakin ingin mereset password user ini menjadi (hygenix2026)?", async () => {
+      try {
+        const { data, error } = await supabaseClient.functions.invoke('reset-password', {
+          body: { user_id: userId }
+        });
 
-    try {
-      const { data, error } = await supabaseClient.functions.invoke('reset-password', {
-        body: { user_id: userId }
-      });
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
 
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+        showToast("Password berhasil direset ke default.");
+        loadAllUsers(); 
 
-      alert("Password berhasil direset menjadi: hygenix2026");
-    } catch (err) {
-      alert("Gagal reset password: " + err.message);
-    }
+      } catch (err) {
+        showToast("Gagal reset password: " + err.message, "error");
+      }
+    }, "Reset Password");
   }
 
   function bukaModalPassword() { document.getElementById('modalPassword').style.display = 'flex'; }
@@ -820,15 +964,15 @@
     const newPass = document.getElementById('inputNewPassword').value;
     const btn = document.getElementById('btnSimpanPassword');
 
-    if(newPass.length < 6) { alert("Password minimal 6 karakter!"); return; }
+    if(newPass.length < 6) { showToast("Password minimal 6 karakter!", "error"); return; }
 
     btn.innerText = "Menyimpan..."; btn.disabled = true;
 
     const { data, error } = await supabaseClient.auth.updateUser({ password: newPass });
 
-    if(error) alert("Gagal ganti password: " + error.message);
+    if(error) showToast("Gagal ganti password: " + error.message, "error");
     else {
-      alert("Password berhasil diubah!");
+      showToast("Password berhasil diubah!");
       document.getElementById('inputNewPassword').value = '';
       tutupModalPassword();
     }
@@ -847,8 +991,11 @@
     document.getElementById('fabAksi').style.display = (tabId === 'aksi') ? 'flex' : 'none';
   }
 
-  async function logout() {
-    if(confirm("Keluar dari aplikasi?")) { await supabaseClient.auth.signOut(); window.location.href = 'login.html'; }
+  function logout() {
+    showConfirm("Keluar dari aplikasi?", async () => {
+      await supabaseClient.auth.signOut(); 
+      window.location.href = 'login.html'; 
+    }, "Logout");
   }
 
   // Jalankan pengecekan saat halaman dimuat
@@ -860,14 +1007,11 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('./sw.js').then(function(registration) {
-        // Deteksi jika ada Service Worker baru yang siap
         registration.onupdatefound = function() {
           const installingWorker = registration.installing;
           installingWorker.onstatechange = function() {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
-                // Jika sudah ada Service Worker lama, berarti ini update baru
-                console.log('Update baru tersedia. Memuat ulang halaman...');
                 alert('Aplikasi telah diperbarui! Halaman akan dimuat ulang.');
                 window.location.reload();
               }
