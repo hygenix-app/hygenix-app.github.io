@@ -29,10 +29,8 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
     
-    /* FIX 1: LAYOUT TERKUNCI */
+    /* BATCH 1: LAYOUT TERKUNCI & ANTI COPY TEXT */
     html, body { height: 100%; overflow: hidden; }
-    
-    /* FIX 3: ANTI COPY TEXT */
     body { 
       background: #e2e8f0; 
       color: var(--teks); 
@@ -42,7 +40,6 @@
       user-select: none;
       -webkit-touch-callout: none;
     }
-
     input, textarea { -webkit-user-select: text; user-select: text; }
     
     #app { 
@@ -58,7 +55,7 @@
 
     /* Header Fixed */
     .header { 
-      flex-shrink: 0; /* Mencegah header mengecil */
+      flex-shrink: 0;
       background: var(--primary); 
       padding: 15px 20px 25px 20px; 
       color: white; 
@@ -103,11 +100,23 @@
     .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s; }
     .proker-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--teks-muted); align-items: center; margin-top: 5px;}
     
-    .badge { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; gap: 5px; transition: 0.2s; }
+    /* BATCH 2: DESAIN TOMBOL STATUS (LEBIH KECIL & RAPI) */
+    .badge { 
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 3px 8px; /* Padding diperkecil */
+      border-radius: 20px; /* Model pill/kapsul */
+      font-size: 10px; /* Font lebih kecil */
+      font-weight: 600; 
+      gap: 4px; 
+      letter-spacing: 0.3px;
+      transition: 0.2s;
+    }
     .badge-pending { background: #fef08a; color: #854d0e; }
     .badge-proses { background: #dbeafe; color: #1e40af; }
     .badge-valid { background: #dcfce7; color: #166534; }
-    .badge-clickable { cursor: pointer; }
+    .badge-clickable { cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .badge-clickable:active { transform: scale(0.95); }
 
     .btn-hapus-kecil { position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--merah); cursor: pointer; padding: 5px; }
@@ -155,7 +164,7 @@
 
     /* Bottom Navigation Fixed */
     .bottom-nav { 
-      position: fixed; /* Mengunci posisi di bawah */
+      position: fixed; 
       bottom: 0; 
       width: 100%; 
       max-width: 480px; 
@@ -185,7 +194,7 @@
     .modal-title { font-size: 16px; font-weight: 700; }
     .btn-close { background: none; border: none; cursor: pointer; color: var(--teks-muted); }
 
-    /* FIX 2: CUSTOM CONFIRM & TOAST (Pengganti Alert Browser) */
+    /* CUSTOM CONFIRM & TOAST (Dari Batch 1) */
     .custom-confirm { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
     .confirm-box { background: white; width: 100%; max-width: 320px; border-radius: 16px; padding: 20px; text-align: center; animation: popIn 0.2s; }
     @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -451,7 +460,7 @@
   let radarChartInstance = null; 
   let confirmCallback = null;
 
-  // FUNGSI TOAST
+  // FUNGSI TOAST & CONFIRM
   function showToast(message, type = 'success') {
     const toast = document.getElementById('customToast');
     const icon = document.getElementById('toastIcon');
@@ -471,7 +480,6 @@
     setTimeout(() => { toast.classList.remove('show'); }, 3000);
   }
 
-  // FUNGSI KONFIRMASI
   function showConfirm(message, callback, title = "Konfirmasi") {
     document.getElementById('confirmTitle').innerText = title;
     document.getElementById('confirmMsg').innerText = message;
@@ -612,7 +620,9 @@
   }
 
   async function ubahStatusProker(id, currentStatus) {
+    // BATCH 2: HAK AKSES KETAT
     if(currentUserRole !== 'admin' && currentUserRole !== 'ketua' && currentUserRole !== 'guru') return;
+    
     let newStatus = 'Rencana';
     if(currentStatus === 'Rencana') newStatus = 'Berjalan';
     else if(currentStatus === 'Berjalan') newStatus = 'Selesai';
@@ -882,8 +892,15 @@
           <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
         `;
 
-        // Catatan: Logika tombol Reset (hide) belum diimplementasikan di Batch 1. Ini masih menggunakan logika lama.
-        let btnReset = `<button class="btn-reset" onclick="resetPassword('${u.id}')">Reset</button>`;
+        // BATCH 2: LOGIKA SEMBUNYIKAN TOMBOL RESET
+        let btnReset = '';
+        if (u.has_changed_password) {
+            // Jika sudah pernah ganti password, tampilkan tombol reset
+            btnReset = `<button class="btn-reset" onclick="resetPassword('${u.id}')">Reset</button>`;
+        } else {
+            // Jika masih pakai default, sembunyikan tombol, ganti dengan teks kecil
+            btnReset = `<span style="font-size: 10px; color: #94a3b8; font-weight: bold; padding: 6px;">Default</span>`;
+        }
 
         listContainer.innerHTML += `
           <div class="user-item">
@@ -948,6 +965,9 @@
         if (error) throw error;
         if (data.error) throw new Error(data.error);
 
+        // BATCH 2: Setelah direset, set flag menjadi false agar tombol hilang lagi
+        await supabaseClient.from('profiles').update({ has_changed_password: false }).eq('id', userId);
+        
         showToast("Password berhasil direset ke default.");
         loadAllUsers(); 
 
@@ -972,6 +992,9 @@
 
     if(error) showToast("Gagal ganti password: " + error.message, "error");
     else {
+      // BATCH 2: Set flag true karena user sudah ganti password
+      await supabaseClient.from('profiles').update({ has_changed_password: true }).eq('id', currentUserId);
+      
       showToast("Password berhasil diubah!");
       document.getElementById('inputNewPassword').value = '';
       tutupModalPassword();
