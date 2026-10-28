@@ -54,7 +54,7 @@
     .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
     .proker-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; }
-    .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-right: 30px; }
+    .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-right: 60px; /* Lebar untuk 2 tombol */ }
     .progress-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
     .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s; }
     .proker-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--teks-muted); align-items: center; margin-top: 5px;}
@@ -66,7 +66,9 @@
     .badge-clickable { cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .badge-clickable:active { transform: scale(0.95); }
 
-    .btn-hapus-kecil { position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--merah); cursor: pointer; padding: 5px; }
+    /* Container untuk tombol aksi (Edit & Hapus) */
+    .aksi-container { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; }
+    .btn-aksi-kecil { background: none; border: none; cursor: pointer; padding: 5px; }
 
     .saldo-card { background: linear-gradient(135deg, var(--primary) 0%, #059669 100%); color: white; padding: 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
     .saldo-label { font-size: 12px; opacity: 0.9; margin-bottom: 5px; }
@@ -270,11 +272,14 @@
 
 </div>
 
-<!-- MODALS -->
+<!-- MODAL PROKER (Bisa untuk Tambah & Edit) -->
 <div id="modalProker" class="modal-overlay">
   <div class="modal-content">
-    <div class="modal-header"><div class="modal-title">Tambah Proker Baru</div><button class="btn-close" onclick="tutupModalProker()"><i data-lucide="x"></i></button></div>
+    <div class="modal-header"><div class="modal-title" id="titleModalProker">Tambah Proker Baru</div><button class="btn-close" onclick="tutupModalProker()"><i data-lucide="x"></i></button></div>
     <div class="admin-form" style="border:none; padding:0;">
+      <!-- Input hidden untuk menyimpan ID saat edit -->
+      <input type="hidden" id="editProkerId" value="">
+      
       <input type="text" id="prokerJudul" placeholder="Judul Kegiatan">
       <textarea id="prokerDesk" placeholder="Deskripsi Singkat..." rows="2"></textarea>
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Target Selesai</label>
@@ -284,10 +289,14 @@
   </div>
 </div>
 
+<!-- MODAL KEUANGAN (Bisa untuk Tambah & Edit) -->
 <div id="modalKeuangan" class="modal-overlay">
   <div class="modal-content">
-    <div class="modal-header"><div class="modal-title">Catat Transaksi</div><button class="btn-close" onclick="tutupModalKeuangan()"><i data-lucide="x"></i></button></div>
+    <div class="modal-header"><div class="modal-title" id="titleModalKeuangan">Catat Transaksi</div><button class="btn-close" onclick="tutupModalKeuangan()"><i data-lucide="x"></i></button></div>
     <div class="admin-form" style="border:none; padding:0;">
+      <!-- Input hidden untuk menyimpan ID saat edit -->
+      <input type="hidden" id="editTrxId" value="">
+
       <select id="trxTipe"><option value="Pemasukan">Pemasukan (Masuk)</option><option value="Pengeluaran">Pengeluaran (Keluar)</option></select>
       <input type="number" id="trxJumlah" placeholder="Jumlah (Cth: 50000)">
       <input type="text" id="trxKet" placeholder="Keterangan (Cth: Iuran Kelas 7A)">
@@ -492,21 +501,25 @@
         if(p.status === 'Berjalan') badgeClass = 'badge-proses';
         if(p.status === 'Selesai') badgeClass = 'badge-valid';
 
-        // HAK AKSES UBAH STATUS
         const canChangeStatus = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris' || currentUserRole === 'guru');
         const onclickStatus = canChangeStatus ? `onclick="ubahStatusProker('${p.id}', '${p.status}')"` : '';
         const cursorStyle = canChangeStatus ? 'badge-clickable' : '';
         const iconRefresh = canChangeStatus ? `<i data-lucide="refresh-cw" style="width:10px; display:inline;"></i>` : '';
 
-        // HAK AKSES HAPUS PROKER
-        let adminBtn = '';
+        // Tombol Aksi (Edit & Hapus)
+        let actionBtns = '';
         if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris') {
-           adminBtn = `<button class="btn-hapus-kecil" onclick="hapusProker('${p.id}')"><i data-lucide="trash-2" style="width:16px;"></i></button>`;
+           actionBtns = `
+            <div class="aksi-container">
+              <button class="btn-aksi-kecil" onclick="bukaModalEditProker('${p.id}')" style="color:var(--biru);" title="Edit"><i data-lucide="edit" style="width:16px;"></i></button>
+              <button class="btn-aksi-kecil" onclick="hapusProker('${p.id}')" style="color:var(--merah);" title="Hapus"><i data-lucide="trash-2" style="width:16px;"></i></button>
+            </div>
+           `;
         }
 
         listProker.innerHTML += `
           <div class="proker-card">
-            ${adminBtn}
+            ${actionBtns}
             <div class="proker-title">${p.judul}</div>
             <p style="font-size:11px; color:var(--teks-muted); margin-bottom:10px;">${p.deskripsi || '-'}</p>
             <div class="proker-meta">
@@ -528,10 +541,38 @@
     lucide.createIcons();
   }
 
-  function bukaModalProker() { document.getElementById('modalProker').style.display = 'flex'; }
+  // Fungsi Buka Modal (Tambah Baru)
+  function bukaModalProker() { 
+    document.getElementById('titleModalProker').innerText = "Tambah Proker Baru";
+    document.getElementById('editProkerId').value = ""; // Kosongkan ID untuk insert
+    document.getElementById('prokerJudul').value = "";
+    document.getElementById('prokerDesk').value = "";
+    document.getElementById('prokerTanggal').value = "";
+    document.getElementById('modalProker').style.display = 'flex'; 
+  }
+
+  // Fungsi Buka Modal (Edit)
+  function bukaModalEditProker(id) {
+    // Cari data dari list yang sudah di-render
+    const btn = event.target.closest('button');
+    const card = btn.closest('.proker-card');
+    // Kita butuh data asli, jadi panggil dari Supabase
+    supabaseClient.from('program_kerja').select('*').eq('id', id).single().then(({data}) => {
+      if(data) {
+        document.getElementById('titleModalProker').innerText = "Edit Proker";
+        document.getElementById('editProkerId').value = data.id; // Isi ID untuk update
+        document.getElementById('prokerJudul').value = data.judul;
+        document.getElementById('prokerDesk').value = data.deskripsi || "";
+        document.getElementById('prokerTanggal').value = data.target_selesai || "";
+        document.getElementById('modalProker').style.display = 'flex'; 
+      }
+    });
+  }
+
   function tutupModalProker() { document.getElementById('modalProker').style.display = 'none'; }
 
   async function simpanProker() {
+    const id = document.getElementById('editProkerId').value;
     const judul = document.getElementById('prokerJudul').value;
     const deskripsi = document.getElementById('prokerDesk').value;
     const target = document.getElementById('prokerTanggal').value;
@@ -540,17 +581,25 @@
     if(!judul) { showToast("Judul proker wajib diisi!", "error"); return; }
     btn.innerText = "Menyimpan..."; btn.disabled = true;
 
-    const { error } = await supabaseClient.from('program_kerja').insert([{
-      judul: judul, deskripsi: deskripsi, target_selesai: target || null, status: 'Rencana', created_by: currentUserId
-    }]);
+    let error;
+    if(id) {
+      // Mode Edit (UPDATE)
+      const res = await supabaseClient.from('program_kerja').update({
+        judul: judul, deskripsi: deskripsi, target_selesai: target || null
+      }).eq('id', id);
+      error = res.error;
+    } else {
+      // Mode Tambah (INSERT)
+      const res = await supabaseClient.from('program_kerja').insert([{
+        judul: judul, deskripsi: deskripsi, target_selesai: target || null, status: 'Rencana', created_by: currentUserId
+      }]);
+      error = res.error;
+    }
 
     if(error) showToast("Gagal menyimpan: " + error.message, "error");
     else {
-      document.getElementById('prokerJudul').value = '';
-      document.getElementById('prokerDesk').value = '';
-      document.getElementById('prokerTanggal').value = '';
       tutupModalProker(); loadDataProker();
-      showToast("Proker berhasil ditambahkan!");
+      showToast(id ? "Proker diperbarui!" : "Proker berhasil ditambahkan!");
     }
     btn.innerText = "Simpan Proker"; btn.disabled = false;
   }
@@ -587,11 +636,16 @@
         const nominal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(t.jumlah);
         const isMasuk = t.tipe === 'Pemasukan';
 
-        let btnHapus = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'bendahara') 
-          ? `<button onclick="hapusTransaksi('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; margin-left:10px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` 
-          : '';
+        // Tombol Aksi (Edit & Hapus)
+        let actionBtns = '';
+        if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'bendahara') {
+          actionBtns = `
+            <button onclick="bukaModalEditKeuangan('${t.id}')" style="background:none; border:none; color:var(--biru); cursor:pointer; margin-left:5px;"><i data-lucide="edit" style="width:16px;"></i></button>
+            <button onclick="hapusTransaksi('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; margin-left:5px;"><i data-lucide="trash-2" style="width:16px;"></i></button>
+          `;
+        }
 
-        list.innerHTML += `<div class="trx-item"><div class="trx-info"><div class="trx-title">${t.keterangan}</div><div class="trx-date">${t.tanggal}</div></div><div style="display:flex; align-items:center;"><div class="trx-amount ${isMasuk ? 'masuk' : 'keluar'}">${isMasuk ? '+' : '-'} ${nominal}</div>${btnHapus}</div></div>`;
+        list.innerHTML += `<div class="trx-item"><div class="trx-info"><div class="trx-title">${t.keterangan}</div><div class="trx-date">${t.tanggal}</div></div><div style="display:flex; align-items:center;"><div class="trx-amount ${isMasuk ? 'masuk' : 'keluar'}">${isMasuk ? '+' : '-'} ${nominal}</div>${actionBtns}</div></div>`;
       });
     } else list.innerHTML = '<p style="font-size:12px; text-align:center; color:#94a3b8;">Belum ada transaksi.</p>';
 
@@ -602,10 +656,36 @@
     lucide.createIcons();
   }
 
-  function bukaModalKeuangan() { document.getElementById('modalKeuangan').style.display = 'flex'; }
+  // Fungsi Buka Modal (Tambah Baru)
+  function bukaModalKeuangan() { 
+    document.getElementById('titleModalKeuangan').innerText = "Catat Transaksi Baru";
+    document.getElementById('editTrxId').value = ""; // Kosongkan ID
+    document.getElementById('trxTipe').value = "Pemasukan";
+    document.getElementById('trxJumlah').value = "";
+    document.getElementById('trxKet').value = "";
+    document.getElementById('trxTanggal').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modalKeuangan').style.display = 'flex'; 
+  }
+
+  // Fungsi Buka Modal (Edit)
+  function bukaModalEditKeuangan(id) {
+    supabaseClient.from('keuangan').select('*').eq('id', id).single().then(({data}) => {
+      if(data) {
+        document.getElementById('titleModalKeuangan').innerText = "Edit Transaksi";
+        document.getElementById('editTrxId').value = data.id;
+        document.getElementById('trxTipe').value = data.tipe;
+        document.getElementById('trxJumlah').value = data.jumlah;
+        document.getElementById('trxKet').value = data.keterangan;
+        document.getElementById('trxTanggal').value = data.tanggal;
+        document.getElementById('modalKeuangan').style.display = 'flex'; 
+      }
+    });
+  }
+
   function tutupModalKeuangan() { document.getElementById('modalKeuangan').style.display = 'none'; }
 
   async function simpanTransaksi() {
+    const id = document.getElementById('editTrxId').value;
     const tipe = document.getElementById('trxTipe').value;
     const jumlah = document.getElementById('trxJumlah').value;
     const ket = document.getElementById('trxKet').value;
@@ -615,13 +695,25 @@
     if(!jumlah || !ket || !tgl) { showToast("Semua kolom wajib diisi!", "error"); return; }
     btn.innerText = "Menyimpan..."; btn.disabled = true;
 
-    const { error } = await supabaseClient.from('keuangan').insert([{ tipe: tipe, jumlah: parseInt(jumlah), keterangan: ket, tanggal: tgl, dicatat_oleh: currentUserId }]);
+    let error;
+    if(id) {
+      // Mode Edit
+      const res = await supabaseClient.from('keuangan').update({ 
+        tipe: tipe, jumlah: parseInt(jumlah), keterangan: ket, tanggal: tgl 
+      }).eq('id', id);
+      error = res.error;
+    } else {
+      // Mode Tambah
+      const res = await supabaseClient.from('keuangan').insert([{ 
+        tipe: tipe, jumlah: parseInt(jumlah), keterangan: ket, tanggal: tgl, dicatat_oleh: currentUserId 
+      }]);
+      error = res.error;
+    }
 
     if(error) showToast("Gagal menyimpan: " + error.message, "error");
     else {
-      document.getElementById('trxJumlah').value = ''; document.getElementById('trxKet').value = '';
       tutupModalKeuangan(); loadDataKeuangan();
-      showToast("Transaksi disimpan!");
+      showToast(id ? "Transaksi diperbarui!" : "Transaksi disimpan!");
     }
     btn.innerText = "Simpan Transaksi"; btn.disabled = false;
   }
@@ -819,7 +911,6 @@
 
     if (users && users.length > 0) {
       users.forEach(u => {
-        // Tambahan opsi Sekretaris
         let roleOptions = `
           <option value="anggota" ${u.role === 'anggota' ? 'selected' : ''}>Anggota</option>
           <option value="ketua" ${u.role === 'ketua' ? 'selected' : ''}>Ketua</option>
