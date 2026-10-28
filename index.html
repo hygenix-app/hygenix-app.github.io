@@ -28,64 +28,24 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-    
-    /* BATCH 1: LAYOUT TERKUNCI & ANTI COPY TEXT */
     html, body { height: 100%; overflow: hidden; }
-    body { 
-      background: #e2e8f0; 
-      color: var(--teks); 
-      display: flex; 
-      justify-content: center;
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-touch-callout: none;
-    }
+    body { background: #e2e8f0; color: var(--teks); display: flex; justify-content: center; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
     input, textarea { -webkit-user-select: text; user-select: text; }
     
-    #app { 
-      width: 100%; 
-      max-width: 480px; 
-      height: 100%; 
-      display: flex; 
-      flex-direction: column; 
-      background: var(--bg); 
-      position: relative; 
-      box-shadow: 0 0 20px rgba(0,0,0,0.1); 
-    }
+    #app { width: 100%; max-width: 480px; height: 100%; display: flex; flex-direction: column; background: var(--bg); position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
 
-    /* Header Fixed */
-    .header { 
-      flex-shrink: 0;
-      background: var(--primary); 
-      padding: 15px 20px 25px 20px; 
-      color: white; 
-      border-radius: 0 0 24px 24px; 
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      z-index: 10;
-    }
+    .header { flex-shrink: 0; background: var(--primary); padding: 15px 20px 25px 20px; color: white; border-radius: 0 0 24px 24px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
     .header-brand { display: flex; align-items: center; gap: 10px; }
     .header-brand img { width: 32px; height: 32px; background: white; border-radius: 8px; padding: 3px; }
     .header-title h1 { font-size: 18px; font-weight: 700; margin-bottom: 2px; line-height: 1; }
     .header-title p { font-size: 10px; opacity: 0.9; letter-spacing: 1px; }
     .header-profile { width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; font-size: 14px; }
 
-    /* Konten Scrollable */
-    .content { 
-      flex: 1; 
-      overflow-y: auto; 
-      padding: 20px; 
-      padding-bottom: 100px; 
-      -webkit-overflow-scrolling: touch;
-    }
-    
+    .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
     .tab-pane { display: none; animation: fadeIn 0.3s; }
     .tab-pane.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Cards & Sections */
     .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
     .stat-card { background: var(--card); padding: 15px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
     .stat-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
@@ -93,26 +53,13 @@
     .stat-label { font-size: 11px; color: var(--teks-muted); font-weight: 600; }
     .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-    /* Proker Card */
     .proker-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; }
     .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-right: 30px; }
     .progress-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
     .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s; }
     .proker-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--teks-muted); align-items: center; margin-top: 5px;}
     
-    /* BATCH 2: DESAIN TOMBOL STATUS (LEBIH KECIL & RAPI) */
-    .badge { 
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center; 
-      padding: 3px 8px; /* Padding diperkecil */
-      border-radius: 20px; /* Model pill/kapsul */
-      font-size: 10px; /* Font lebih kecil */
-      font-weight: 600; 
-      gap: 4px; 
-      letter-spacing: 0.3px;
-      transition: 0.2s;
-    }
+    .badge { display: inline-flex; align-items: center; justify-content: center; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; gap: 4px; letter-spacing: 0.3px; transition: 0.2s; }
     .badge-pending { background: #fef08a; color: #854d0e; }
     .badge-proses { background: #dbeafe; color: #1e40af; }
     .badge-valid { background: #dcfce7; color: #166534; }
@@ -121,7 +68,6 @@
 
     .btn-hapus-kecil { position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--merah); cursor: pointer; padding: 5px; }
 
-    /* KEUANGAN STYLES */
     .saldo-card { background: linear-gradient(135deg, var(--primary) 0%, #059669 100%); color: white; padding: 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
     .saldo-label { font-size: 12px; opacity: 0.9; margin-bottom: 5px; }
     .saldo-num { font-size: 28px; font-weight: 700; margin-bottom: 15px; }
@@ -134,7 +80,6 @@
     .trx-amount.masuk { color: var(--primary); }
     .trx-amount.keluar { color: var(--merah); }
 
-    /* FEED AKSI STYLES */
     .feed-card { background: var(--card); border-radius: 16px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; overflow: hidden; position: relative; }
     .feed-header { display: flex; align-items: center; gap: 10px; padding: 12px; padding-right: 40px;}
     .feed-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; }
@@ -147,11 +92,9 @@
     .feed-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px dashed #e2e8f0; padding-top: 10px; }
     .btn-validasi { padding: 6px 12px; background: var(--kuning); color: white; border: none; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
-    /* EVALUASI STYLES */
     .chart-container { background: var(--card); padding: 15px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; margin-bottom: 20px; position: relative; height: 300px; }
     .eval-note { background: #fffbeb; border: 1px solid #fde047; padding: 15px; border-radius: 12px; font-size: 12px; color: #854d0e; line-height: 1.5; }
 
-    /* ADMIN PANEL STYLES */
     .admin-form { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
     .admin-form input, .admin-form select, .admin-form textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; }
     .btn-primary { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -162,31 +105,15 @@
     .user-role-select { padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 11px; font-family: inherit; font-weight: bold; background: #f8fafc; }
     .btn-reset { background: var(--merah); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
-    /* Bottom Navigation Fixed */
-    .bottom-nav { 
-      position: fixed; 
-      bottom: 0; 
-      width: 100%; 
-      max-width: 480px; 
-      background: var(--card); 
-      display: flex; 
-      justify-content: space-around; 
-      padding: 10px 0; 
-      border-radius: 24px 24px 0 0; 
-      box-shadow: 0 -4px 15px rgba(0,0,0,0.05); 
-      z-index: 100; 
-      overflow-x: auto; 
-    }
+    .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 100; overflow-x: auto; }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--teks-muted); font-size: 10px; font-weight: 600; cursor: pointer; padding: 5px 10px; transition: 0.2s; min-width: 65px; }
     .nav-item.active { color: var(--primary); }
     .nav-item i { width: 22px; height: 22px; }
 
-    /* Floating Action Button (FAB) */
     .fab { position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; display: none; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); cursor: pointer; z-index: 99; font-size: 24px; border: none; }
     .fab.merah { background: var(--merah); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
     .fab.biru { background: var(--biru); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
 
-    /* MODAL STYLES */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: flex-end; }
     .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 20px; animation: slideUp 0.3s; max-height: 90vh; overflow-y: auto; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -194,7 +121,6 @@
     .modal-title { font-size: 16px; font-weight: 700; }
     .btn-close { background: none; border: none; cursor: pointer; color: var(--teks-muted); }
 
-    /* CUSTOM CONFIRM & TOAST (Dari Batch 1) */
     .custom-confirm { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
     .confirm-box { background: white; width: 100%; max-width: 320px; border-radius: 16px; padding: 20px; text-align: center; animation: popIn 0.2s; }
     @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -213,7 +139,6 @@
 <body>
 
 <div id="app">
-  <!-- HEADER (Fixed) -->
   <header class="header">
     <div class="header-brand">
       <img src="icon.png" alt="Logo" onerror="this.src='https://via.placeholder.com/32?text=H'">
@@ -225,7 +150,6 @@
     <div class="header-profile" id="headerAvatar" onclick="switchTab('profil', document.querySelectorAll('.nav-item')[6])">?</div>
   </header>
 
-  <!-- KONTEN UTAMA (Scrollable) -->
   <main class="content">
     
     <!-- TAB 1: DASHBOARD -->
@@ -314,9 +238,11 @@
           <p style="font-size: 12px; color: var(--teks-muted); margin-bottom: 5px;">Email Terdaftar</p>
           <p style="font-size: 14px; font-weight: 600; margin-bottom: 15px;" id="profilEmail">...</p>
           
-          <button onclick="bukaModalPassword()" style="width: 100%; padding: 10px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px;">
+          <button id="btnGantiPass" onclick="bukaModalPassword()" style="width: 100%; padding: 10px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px;">
             <i data-lucide="key" style="width: 16px;"></i> Ganti Password
           </button>
+          
+          <p id="msgPassChanged" style="display: none; font-size: 11px; color: var(--teks-muted); text-align: center; background: #f1f5f9; padding: 10px; border-radius: 8px;">Password sudah pernah diubah. Hubungi Admin jika lupa.</p>
         </div>
         <button onclick="logout()" style="width: 100%; padding: 14px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;">
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
@@ -331,7 +257,7 @@
   <button class="fab merah" id="fabKeuangan" onclick="bukaModalKeuangan()"><i data-lucide="plus"></i></button>
   <button class="fab biru" id="fabAksi" onclick="bukaModalAksi()"><i data-lucide="camera"></i></button>
 
-  <!-- BOTTOM NAVIGATION (Fixed) -->
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('dashboard', this)"><i data-lucide="home"></i> Home</div>
     <div class="nav-item" onclick="switchTab('proker', this)"><i data-lucide="clipboard-list"></i> Proker</div>
@@ -344,7 +270,7 @@
 
 </div>
 
-<!-- MODALS BAWAAN -->
+<!-- MODALS -->
 <div id="modalProker" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header"><div class="modal-title">Tambah Proker Baru</div><button class="btn-close" onclick="tutupModalProker()"><i data-lucide="x"></i></button></div>
@@ -460,7 +386,6 @@
   let radarChartInstance = null; 
   let confirmCallback = null;
 
-  // FUNGSI TOAST & CONFIRM
   function showToast(message, type = 'success') {
     const toast = document.getElementById('customToast');
     const icon = document.getElementById('toastIcon');
@@ -500,7 +425,7 @@
     }
   }
 
-  // 1. CEK SESI
+  // 1. CEK SESI & HAK AKSES
   async function checkUserSession() {
     const { data: { session }, error } = await supabaseClient.auth.getSession();
     if (error || !session) { window.location.href = 'login.html'; return; }
@@ -517,15 +442,24 @@
       document.getElementById('headerAvatar').innerText = (profile.full_name || "U").charAt(0).toUpperCase();
       currentUserRole = profile.role;
 
-      if (currentUserRole === 'admin') {
+      if (profile.has_changed_password) {
+        document.getElementById('btnGantiPass').style.display = 'none';
+        document.getElementById('msgPassChanged').style.display = 'block';
+      } else {
+        document.getElementById('btnGantiPass').style.display = 'flex';
+        document.getElementById('msgPassChanged').style.display = 'none';
+      }
+
+      // HAK AKSES MENU
+      if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa') {
         document.getElementById('navAdmin').style.display = 'flex';
         loadAllUsers();
       }
-      if (currentUserRole === 'admin' || currentUserRole === 'bendahara') {
+      if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'bendahara') {
         document.getElementById('navKeuangan').style.display = 'flex';
         loadDataKeuangan();
       }
-      if (currentUserRole === 'admin' || currentUserRole === 'guru') {
+      if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'guru') {
         document.getElementById('btnBeriNilai').style.display = 'block';
       }
       
@@ -558,13 +492,15 @@
         if(p.status === 'Berjalan') badgeClass = 'badge-proses';
         if(p.status === 'Selesai') badgeClass = 'badge-valid';
 
-        const canChangeStatus = (currentUserRole === 'admin' || currentUserRole === 'ketua' || currentUserRole === 'guru');
+        // HAK AKSES UBAH STATUS
+        const canChangeStatus = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris' || currentUserRole === 'guru');
         const onclickStatus = canChangeStatus ? `onclick="ubahStatusProker('${p.id}', '${p.status}')"` : '';
         const cursorStyle = canChangeStatus ? 'badge-clickable' : '';
         const iconRefresh = canChangeStatus ? `<i data-lucide="refresh-cw" style="width:10px; display:inline;"></i>` : '';
 
+        // HAK AKSES HAPUS PROKER
         let adminBtn = '';
-        if (currentUserRole === 'admin' || currentUserRole === 'ketua') {
+        if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris') {
            adminBtn = `<button class="btn-hapus-kecil" onclick="hapusProker('${p.id}')"><i data-lucide="trash-2" style="width:16px;"></i></button>`;
         }
 
@@ -620,8 +556,7 @@
   }
 
   async function ubahStatusProker(id, currentStatus) {
-    // BATCH 2: HAK AKSES KETAT
-    if(currentUserRole !== 'admin' && currentUserRole !== 'ketua' && currentUserRole !== 'guru') return;
+    if(currentUserRole !== 'admin' && currentUserRole !== 'mahasiswa' && currentUserRole !== 'ketua' && currentUserRole !== 'sekretaris' && currentUserRole !== 'guru') return;
     
     let newStatus = 'Rencana';
     if(currentStatus === 'Rencana') newStatus = 'Berjalan';
@@ -652,7 +587,7 @@
         const nominal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(t.jumlah);
         const isMasuk = t.tipe === 'Pemasukan';
 
-        let btnHapus = (currentUserRole === 'admin' || currentUserRole === 'bendahara') 
+        let btnHapus = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'bendahara') 
           ? `<button onclick="hapusTransaksi('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; margin-left:10px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` 
           : '';
 
@@ -710,20 +645,20 @@
     const dashTotalAksi = document.getElementById('dashTotalAksi');
     list.innerHTML = '';
 
-    if (error) { list.innerHTML = '<p style="font-size:12px; text-align:center; color:#ef4444;">Gagal memuat feed.</p>'; return; }
+    if (error) { list.innerHTML = '<p style="font-size:12px; text-align:center; color:#ef4444;">Gagal memuat feed. (Relasi data terputus)</p>'; return; }
 
     if (feeds && feeds.length > 0) {
       dashTotalAksi.innerText = feeds.length;
       feeds.forEach(f => {
-        const namaPelapor = f.profiles ? f.profiles.full_name : 'Anonim';
-        const judulProker = f.program_kerja ? f.program_kerja.judul : 'Umum';
+        const namaPelapor = f.profiles ? f.profiles.full_name : 'Anonim (User Dihapus)';
+        const judulProker = f.program_kerja ? f.program_kerja.judul : 'Proker Dihapus';
         const isMenunggu = f.status_validasi === 'Menunggu';
         const badgeColor = isMenunggu ? 'badge-pending' : 'badge-valid';
         
-        const canValidate = (currentUserRole === 'admin' || currentUserRole === 'guru') && isMenunggu;
+        const canValidate = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'guru') && isMenunggu;
         const btnValidasi = canValidate ? `<button class="btn-validasi" onclick="validasiLaporan('${f.id}')">Validasi Laporan</button>` : '';
         
-        const canDelete = (currentUserRole === 'admin' || f.user_id === currentUserId);
+        const canDelete = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || f.user_id === currentUserId);
         const btnHapus = canDelete ? `<button onclick="hapusLaporan('${f.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; position:absolute; top:12px; right:12px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` : '';
 
         list.innerHTML += `
@@ -884,21 +819,21 @@
 
     if (users && users.length > 0) {
       users.forEach(u => {
+        // Tambahan opsi Sekretaris
         let roleOptions = `
           <option value="anggota" ${u.role === 'anggota' ? 'selected' : ''}>Anggota</option>
           <option value="ketua" ${u.role === 'ketua' ? 'selected' : ''}>Ketua</option>
+          <option value="sekretaris" ${u.role === 'sekretaris' ? 'selected' : ''}>Sekretaris</option>
           <option value="bendahara" ${u.role === 'bendahara' ? 'selected' : ''}>Bendahara</option>
           <option value="guru" ${u.role === 'guru' ? 'selected' : ''}>Guru</option>
+          <option value="mahasiswa" ${u.role === 'mahasiswa' ? 'selected' : ''}>Mahasiswa</option>
           <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
         `;
 
-        // BATCH 2: LOGIKA SEMBUNYIKAN TOMBOL RESET
         let btnReset = '';
         if (u.has_changed_password) {
-            // Jika sudah pernah ganti password, tampilkan tombol reset
             btnReset = `<button class="btn-reset" onclick="resetPassword('${u.id}')">Reset</button>`;
         } else {
-            // Jika masih pakai default, sembunyikan tombol, ganti dengan teks kecil
             btnReset = `<span style="font-size: 10px; color: #94a3b8; font-weight: bold; padding: 6px;">Default</span>`;
         }
 
@@ -965,7 +900,6 @@
         if (error) throw error;
         if (data.error) throw new Error(data.error);
 
-        // BATCH 2: Setelah direset, set flag menjadi false agar tombol hilang lagi
         await supabaseClient.from('profiles').update({ has_changed_password: false }).eq('id', userId);
         
         showToast("Password berhasil direset ke default.");
@@ -992,12 +926,14 @@
 
     if(error) showToast("Gagal ganti password: " + error.message, "error");
     else {
-      // BATCH 2: Set flag true karena user sudah ganti password
       await supabaseClient.from('profiles').update({ has_changed_password: true }).eq('id', currentUserId);
       
-      showToast("Password berhasil diubah!");
+      showToast("Password berhasil diubah! Tombol ganti password disembunyikan.");
       document.getElementById('inputNewPassword').value = '';
       tutupModalPassword();
+
+      document.getElementById('btnGantiPass').style.display = 'none';
+      document.getElementById('msgPassChanged').style.display = 'block';
     }
     btn.innerText = "Simpan Password Baru"; btn.disabled = false;
   }
