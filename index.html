@@ -80,18 +80,33 @@
     .btn-aksi-kecil { background: none; border: none; cursor: pointer; padding: 5px; transition: 0.1s; }
     .btn-aksi-kecil:active { transform: scale(0.85); } 
 
+    /* UI CHECKLIST BARU */
     .task-list { margin-top: 15px; margin-bottom: 15px; }
-    .task-item { display: flex; align-items: center; gap: 10px; background: white; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 8px; }
-    .task-checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #cbd5e1; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
-    .task-checkbox.disabled { background: #e2e8f0; border-color: #cbd5e1; cursor: not-allowed; }
+    .task-item { 
+      display: flex; align-items: center; gap: 12px; 
+      background: #ffffff; padding: 14px 15px; 
+      border-radius: 12px; border: 1px solid #e2e8f0; 
+      margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      transition: 0.2s;
+    }
+    .task-item:hover { border-color: #cbd5e1; }
+    
+    .task-checkbox { 
+      width: 22px; height: 22px; border-radius: 6px; 
+      border: 2px solid #cbd5e1; cursor: pointer; 
+      display: flex; justify-content: center; align-items: center; 
+      transition: 0.2s; flex-shrink: 0;
+    }
+    .task-checkbox.disabled { background: #f1f5f9; border-color: #cbd5e1; cursor: not-allowed; opacity: 0.7; }
     .task-checkbox.checked { background: var(--primary); border-color: var(--primary); }
-    .task-checkbox.checked::after { content: '✓'; color: white; font-size: 12px; font-weight: bold; }
-    .task-text { flex: 1; font-size: 13px; }
+    .task-checkbox.checked::after { content: '✓'; color: white; font-size: 13px; font-weight: bold; }
+    
+    .task-text { flex: 1; font-size: 13px; font-weight: 500; color: var(--teks); }
     .task-text.done { text-decoration: line-through; color: var(--teks-muted); }
     
     .input-task-row { display: flex; gap: 8px; margin-top: 15px; }
-    .input-task-row input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; }
-    .input-task-row button { padding: 0 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .input-task-row input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 13px; }
+    .input-task-row button { padding: 0 18px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
 
     .saldo-card { background: linear-gradient(135deg, var(--primary) 0%, #059669 100%); color: white; padding: 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
     .saldo-label { font-size: 12px; opacity: 0.9; margin-bottom: 5px; }
@@ -304,7 +319,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.6 (Eval Labels)</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.7 (Fix Notif)</p>
 
       </div>
     </div>
@@ -377,7 +392,11 @@
     </div>
     
     <div id="detailProkerWarning"></div>
-    <p style="font-size:12px; color:var(--teks-muted); margin-bottom:10px;" id="detailProkerDesk">...</p>
+    
+    <div id="detailProkerDeskContainer">
+      <p style="font-size:12px; color:var(--teks-muted); margin-bottom:10px;" id="detailProkerDesk">...</p>
+    </div>
+
     <div class="progress-container" style="height:12px;"><div class="progress-bar" id="detailProkerProgress" style="width: 0%;"></div></div>
     <p style="font-size:11px; text-align:right; font-weight:bold; margin-bottom:15px;" id="detailProkerPercent">0%</p>
 
@@ -455,41 +474,36 @@
   </div>
 </div>
 
-<!-- MODAL EVALUASI (DENGAN LABEL OTOMATIS) -->
+<!-- MODAL EVALUASI -->
 <div id="modalEvaluasi" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header"><div class="modal-title">Beri Nilai Evaluasi</div><button class="btn-close" onclick="tutupModalEvaluasi()"><i data-lucide="x"></i></button></div>
     <div class="admin-form" style="border:none; padding:0;">
       
-      <!-- A. MANAJEMEN -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
         <label style="font-size:12px; font-weight:600; display:block;">A. Manajemen Organisasi (0-100)</label>
         <span id="labelManajemen" style="font-size: 11px; font-weight: bold; color: var(--primary);">Baik</span>
       </div>
       <input type="number" id="evalManajemen" min="0" max="100" value="80" oninput="updateLabelEval('evalManajemen', 'labelManajemen')">
 
-      <!-- B. PROKER -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
         <label style="font-size:12px; font-weight:600; display:block;">B. Pelaksanaan Proker (0-100)</label>
         <span id="labelProker" style="font-size: 11px; font-weight: bold; color: var(--primary);">Baik</span>
       </div>
       <input type="number" id="evalProker" min="0" max="100" value="80" oninput="updateLabelEval('evalProker', 'labelProker')">
 
-      <!-- C. KADERISASI -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
         <label style="font-size:12px; font-weight:600; display:block;">C. Kaderisasi & Partisipasi (0-100)</label>
         <span id="labelKaderisasi" style="font-size: 11px; font-weight: bold; color: var(--primary);">Baik</span>
       </div>
       <input type="number" id="evalKaderisasi" min="0" max="100" value="80" oninput="updateLabelEval('evalKaderisasi', 'labelKaderisasi')">
 
-      <!-- D. AKSI -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
         <label style="font-size:12px; font-weight:600; display:block;">D. Aksi Nyata Lingkungan (0-100)</label>
         <span id="labelAksi" style="font-size: 11px; font-weight: bold; color: var(--primary);">Baik</span>
       </div>
       <input type="number" id="evalAksi" min="0" max="100" value="80" oninput="updateLabelEval('evalAksi', 'labelAksi')">
 
-      <!-- E. PELAPORAN -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
         <label style="font-size:12px; font-weight:600; display:block;">E. Dokumentasi & Pelaporan (0-100)</label>
         <span id="labelPelaporan" style="font-size: 11px; font-weight: bold; color: var(--primary);">Baik</span>
@@ -548,6 +562,7 @@
   let filterKasTipe = 'all';
   let globalProkers = []; 
   let fullReportText = "";
+  let isProkerCompletedLocked = false; // Variabel baru untuk mengunci checklist jika 100%
 
   const rolesCanManageTasks = ['admin', 'mahasiswa', 'ketua', 'sekretaris', 'bendahara'];
 
@@ -795,15 +810,15 @@
           <b>⏳ Belum Dimulai</b><br>Proker ini baru akan dimulai pada tanggal <b>${proker.tanggal_mulai}</b>.
         </div>
       `;
-      document.getElementById('detailProkerDesk').style.display = 'none';
+      document.getElementById('detailProkerDeskContainer').style.display = 'none';
     } else {
       warningDiv.innerHTML = '';
-      document.getElementById('detailProkerDesk').style.display = 'block';
+      document.getElementById('detailProkerDeskContainer').style.display = 'block';
       document.getElementById('detailProkerDesk').innerText = proker.deskripsi || "Tidak ada deskripsi.";
     }
     
     const canManage = rolesCanManageTasks.includes(currentUserRole);
-    document.getElementById('inputTaskContainer').style.display = (canManage && !isCurrentProkerFuture) ? 'flex' : 'none';
+    document.getElementById('inputTaskContainer').style.display = (canManage && !isCurrentProkerFuture && !isProkerCompletedLocked) ? 'flex' : 'none';
 
     document.getElementById('modalDetailProker').style.display = 'flex';
     
@@ -834,12 +849,29 @@
       let selesaiCount = 0;
       tasks.forEach(t => {
         if(t.is_selesai) selesaiCount++;
-        
+      });
+
+      const percent = Math.round((selesaiCount / tasks.length) * 100);
+      
+      // Cek apakah progress sudah 100% (Selesai)
+      isProkerCompletedLocked = (percent === 100);
+      const isPengurus = rolesCanManageTasks.includes(currentUserRole);
+
+      // Sembunyikan input tambah tugas jika sudah 100% dan yang login bukan pengurus
+      const canAddTask = isPengurus && !isProkerCompletedLocked && !isCurrentProkerFuture;
+      document.getElementById('inputTaskContainer').style.display = canAddTask ? 'flex' : 'none';
+
+      tasks.forEach(t => {
         const isChecked = t.is_selesai ? 'checked' : '';
         const isDone = t.is_selesai ? 'done' : '';
-        const disabledClass = isCurrentProkerFuture ? 'disabled' : '';
         
-        const canDeleteTask = rolesCanManageTasks.includes(currentUserRole) && !isCurrentProkerFuture;
+        // Tentukan apakah checkbox bisa diklik
+        // Tidak bisa diklik jika: proker belum mulai ATAU (proker selesai 100% DAN user bukan pengurus)
+        const isLockedForUser = isCurrentProkerFuture || (isProkerCompletedLocked && !isPengurus);
+        const disabledClass = isLockedForUser ? 'disabled' : '';
+        
+        // Hapus tombol 'x' jika terkunci
+        const canDeleteTask = isPengurus && !isCurrentProkerFuture;
         const btnHapusTask = canDeleteTask ? `<button onclick="hapusTugas('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer;"><i data-lucide="x" style="width:16px;"></i></button>` : '';
 
         container.innerHTML += `
@@ -851,7 +883,6 @@
         `;
       });
 
-      const percent = Math.round((selesaiCount / tasks.length) * 100);
       document.getElementById('detailProkerProgress').style.width = percent + '%';
       document.getElementById('detailProkerPercent').innerText = percent + '%';
       
@@ -888,6 +919,12 @@
        return;
     }
 
+    // Validasi Keamanan Ekstra: Cegah anggota mencentang jika proker sudah 100% selesai
+    if (isProkerCompletedLocked && !rolesCanManageTasks.includes(currentUserRole)) {
+       showToast("Proker sudah selesai. Hanya pengurus inti yang bisa mengubah.", "warning");
+       return;
+    }
+
     const newStatus = !currentStatus;
     const prokerId = document.getElementById('detailProkerId').value;
     const { error } = await supabaseClient.from('tugas_proker').update({ is_selesai: newStatus }).eq('id', id);
@@ -896,6 +933,11 @@
   }
 
   function hapusTugas(id) {
+    if (isProkerCompletedLocked && !rolesCanManageTasks.includes(currentUserRole)) {
+       showToast("Proker sudah selesai. Anda tidak bisa menghapus tugas.", "warning");
+       return;
+    }
+
     showConfirm("Hapus tugas ini?", async () => {
       const prokerId = document.getElementById('detailProkerId').value;
       const { error } = await supabaseClient.from('tugas_proker').delete().eq('id', id);
@@ -1092,7 +1134,6 @@
   async function loadFeedAksi() {
     const search = document.getElementById('searchAksi').value.toLowerCase();
     
-    // 1. Ambil data laporan tanpa join
     const { data: feeds, error } = await supabaseClient
       .from('laporan_aksi')
       .select('*')
@@ -1111,7 +1152,6 @@
     if (feeds && feeds.length > 0) {
       dashTotalAksi.innerText = feeds.length;
       
-      // 2. Ambil data profil dan proker terpisah (Manual Join)
       const userIds = [...new Set(feeds.map(f => f.user_id).filter(id => id))];
       const prokerIds = [...new Set(feeds.map(f => f.proker_id).filter(id => id))];
 
@@ -1127,7 +1167,6 @@
           if (prokers) prokersData = prokers;
       }
 
-      // 3. Gabungkan data
       const enrichedFeeds = feeds.map(f => {
           return {
               ...f,
@@ -1136,7 +1175,6 @@
           };
       });
 
-      // 4. Filter data
       let filteredFeeds = enrichedFeeds.filter(f => {
         const nama = (f.profiles && f.profiles.full_name) ? f.profiles.full_name : 'Anonim';
         const deskripsi = f.deskripsi || '';
@@ -1297,7 +1335,6 @@
     }
   }
 
-  // Fungsi untuk mengubah angka menjadi teks (Sangat Baik, Baik, dll)
   function updateLabelEval(inputId, labelId) {
     const val = parseInt(document.getElementById(inputId).value);
     let text = "";
@@ -1305,16 +1342,16 @@
 
     if (val >= 90) { 
       text = "Sangat Baik"; 
-      color = "#10b981"; // Hijau
+      color = "#10b981"; 
     } else if (val >= 75) { 
       text = "Baik"; 
-      color = "#3b82f6"; // Biru
+      color = "#3b82f6"; 
     } else if (val >= 60) { 
       text = "Cukup"; 
-      color = "#f59e0b"; // Kuning
+      color = "#f59e0b"; 
     } else { 
       text = "Kurang"; 
-      color = "#ef4444"; // Merah
+      color = "#ef4444"; 
     }
 
     const labelEl = document.getElementById(labelId);
@@ -1326,8 +1363,6 @@
 
   function bukaModalEvaluasi() { 
     document.getElementById('modalEvaluasi').style.display = 'flex'; 
-    
-    // Panggil fungsi update saat modal pertama kali dibuka agar teksnya sinkron dengan angka default (80)
     updateLabelEval('evalManajemen', 'labelManajemen');
     updateLabelEval('evalProker', 'labelProker');
     updateLabelEval('evalKaderisasi', 'labelKaderisasi');
@@ -1701,8 +1736,13 @@
           installingWorker.onstatechange = function() {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
-                alert('Aplikasi telah diperbarui ke Versi 1.4.6! Halaman akan dimuat ulang.');
-                window.location.reload();
+                // MENGGANTI ALERT BAWAAN DENGAN TOAST CUSTOM
+                showToast('Aplikasi diperbarui! Memuat ulang...', 'success');
+                
+                // Delay reload 2 detik agar toast terlihat oleh user
+                setTimeout(() => {
+                  window.location.reload();
+                }, 2000);
               }
             }
           };
