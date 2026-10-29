@@ -54,7 +54,7 @@
     .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
     .proker-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; }
-    .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-right: 60px; /* Lebar untuk 2 tombol */ }
+    .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-right: 60px; }
     .progress-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
     .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s; }
     .proker-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--teks-muted); align-items: center; margin-top: 5px;}
@@ -66,7 +66,6 @@
     .badge-clickable { cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .badge-clickable:active { transform: scale(0.95); }
 
-    /* Container untuk tombol aksi (Edit & Hapus) */
     .aksi-container { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; }
     .btn-aksi-kecil { background: none; border: none; cursor: pointer; padding: 5px; }
 
@@ -272,12 +271,11 @@
 
 </div>
 
-<!-- MODAL PROKER (Bisa untuk Tambah & Edit) -->
+<!-- MODAL PROKER -->
 <div id="modalProker" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header"><div class="modal-title" id="titleModalProker">Tambah Proker Baru</div><button class="btn-close" onclick="tutupModalProker()"><i data-lucide="x"></i></button></div>
     <div class="admin-form" style="border:none; padding:0;">
-      <!-- Input hidden untuk menyimpan ID saat edit -->
       <input type="hidden" id="editProkerId" value="">
       
       <input type="text" id="prokerJudul" placeholder="Judul Kegiatan">
@@ -289,12 +287,11 @@
   </div>
 </div>
 
-<!-- MODAL KEUANGAN (Bisa untuk Tambah & Edit) -->
+<!-- MODAL KEUANGAN -->
 <div id="modalKeuangan" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header"><div class="modal-title" id="titleModalKeuangan">Catat Transaksi</div><button class="btn-close" onclick="tutupModalKeuangan()"><i data-lucide="x"></i></button></div>
     <div class="admin-form" style="border:none; padding:0;">
-      <!-- Input hidden untuk menyimpan ID saat edit -->
       <input type="hidden" id="editTrxId" value="">
 
       <select id="trxTipe"><option value="Pemasukan">Pemasukan (Masuk)</option><option value="Pengeluaran">Pengeluaran (Keluar)</option></select>
@@ -506,7 +503,6 @@
         const cursorStyle = canChangeStatus ? 'badge-clickable' : '';
         const iconRefresh = canChangeStatus ? `<i data-lucide="refresh-cw" style="width:10px; display:inline;"></i>` : '';
 
-        // Tombol Aksi (Edit & Hapus)
         let actionBtns = '';
         if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris') {
            actionBtns = `
@@ -541,26 +537,20 @@
     lucide.createIcons();
   }
 
-  // Fungsi Buka Modal (Tambah Baru)
   function bukaModalProker() { 
     document.getElementById('titleModalProker').innerText = "Tambah Proker Baru";
-    document.getElementById('editProkerId').value = ""; // Kosongkan ID untuk insert
+    document.getElementById('editProkerId').value = "";
     document.getElementById('prokerJudul').value = "";
     document.getElementById('prokerDesk').value = "";
     document.getElementById('prokerTanggal').value = "";
     document.getElementById('modalProker').style.display = 'flex'; 
   }
 
-  // Fungsi Buka Modal (Edit)
   function bukaModalEditProker(id) {
-    // Cari data dari list yang sudah di-render
-    const btn = event.target.closest('button');
-    const card = btn.closest('.proker-card');
-    // Kita butuh data asli, jadi panggil dari Supabase
     supabaseClient.from('program_kerja').select('*').eq('id', id).single().then(({data}) => {
       if(data) {
         document.getElementById('titleModalProker').innerText = "Edit Proker";
-        document.getElementById('editProkerId').value = data.id; // Isi ID untuk update
+        document.getElementById('editProkerId').value = data.id;
         document.getElementById('prokerJudul').value = data.judul;
         document.getElementById('prokerDesk').value = data.deskripsi || "";
         document.getElementById('prokerTanggal').value = data.target_selesai || "";
@@ -583,13 +573,11 @@
 
     let error;
     if(id) {
-      // Mode Edit (UPDATE)
       const res = await supabaseClient.from('program_kerja').update({
         judul: judul, deskripsi: deskripsi, target_selesai: target || null
       }).eq('id', id);
       error = res.error;
     } else {
-      // Mode Tambah (INSERT)
       const res = await supabaseClient.from('program_kerja').insert([{
         judul: judul, deskripsi: deskripsi, target_selesai: target || null, status: 'Rencana', created_by: currentUserId
       }]);
@@ -636,7 +624,6 @@
         const nominal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(t.jumlah);
         const isMasuk = t.tipe === 'Pemasukan';
 
-        // Tombol Aksi (Edit & Hapus)
         let actionBtns = '';
         if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'bendahara') {
           actionBtns = `
@@ -656,10 +643,9 @@
     lucide.createIcons();
   }
 
-  // Fungsi Buka Modal (Tambah Baru)
   function bukaModalKeuangan() { 
     document.getElementById('titleModalKeuangan').innerText = "Catat Transaksi Baru";
-    document.getElementById('editTrxId').value = ""; // Kosongkan ID
+    document.getElementById('editTrxId').value = "";
     document.getElementById('trxTipe').value = "Pemasukan";
     document.getElementById('trxJumlah').value = "";
     document.getElementById('trxKet').value = "";
@@ -667,7 +653,6 @@
     document.getElementById('modalKeuangan').style.display = 'flex'; 
   }
 
-  // Fungsi Buka Modal (Edit)
   function bukaModalEditKeuangan(id) {
     supabaseClient.from('keuangan').select('*').eq('id', id).single().then(({data}) => {
       if(data) {
@@ -697,13 +682,11 @@
 
     let error;
     if(id) {
-      // Mode Edit
       const res = await supabaseClient.from('keuangan').update({ 
         tipe: tipe, jumlah: parseInt(jumlah), keterangan: ket, tanggal: tgl 
       }).eq('id', id);
       error = res.error;
     } else {
-      // Mode Tambah
       const res = await supabaseClient.from('keuangan').insert([{ 
         tipe: tipe, jumlah: parseInt(jumlah), keterangan: ket, tanggal: tgl, dicatat_oleh: currentUserId 
       }]);
@@ -976,9 +959,16 @@
   }
 
   async function ubahRole(userId, newRole) {
-    const { error } = await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId);
-    if (error) showToast("Gagal ubah role: " + error.message, "error");
-    else showToast("Role diubah menjadi " + newRole.toUpperCase());
+    const { data, error } = await supabaseClient.from('profiles').update({ role: newRole }).eq('id', userId).select();
+    
+    if (error) {
+      showToast("Gagal ubah role: " + error.message, "error");
+    } else if (!data || data.length === 0) {
+      // Jika data kosong, berarti RLS memblokir update meskipun tidak ada error
+      showToast("Gagal ubah role: Akses ditolak oleh Database (RLS).", "error");
+    } else {
+      showToast("Role diubah menjadi " + newRole.toUpperCase());
+    }
   }
 
   function resetPassword(userId) {
@@ -1013,18 +1003,29 @@
 
     btn.innerText = "Menyimpan..."; btn.disabled = true;
 
-    const { data, error } = await supabaseClient.auth.updateUser({ password: newPass });
+    const { data: authData, error: authError } = await supabaseClient.auth.updateUser({ password: newPass });
 
-    if(error) showToast("Gagal ganti password: " + error.message, "error");
-    else {
-      await supabaseClient.from('profiles').update({ has_changed_password: true }).eq('id', currentUserId);
-      
-      showToast("Password berhasil diubah! Tombol ganti password disembunyikan.");
-      document.getElementById('inputNewPassword').value = '';
-      tutupModalPassword();
+    if(authError) {
+      showToast("Gagal ganti password: " + authError.message, "error");
+    } else {
+      // Coba update flag di database
+      const { data: profileData, error: profileError } = await supabaseClient
+        .from('profiles')
+        .update({ has_changed_password: true })
+        .eq('id', currentUserId)
+        .select(); // Tambahkan select untuk mengecek apakah update berhasil
 
-      document.getElementById('btnGantiPass').style.display = 'none';
-      document.getElementById('msgPassChanged').style.display = 'block';
+      if(profileError) {
+        showToast("Password diubah, tapi gagal update status: " + profileError.message, "error");
+      } else if (!profileData || profileData.length === 0) {
+        showToast("Password diubah, tapi status gagal disimpan (RLS).", "error");
+      } else {
+        showToast("Password berhasil diubah! Tombol ganti password disembunyikan.");
+        document.getElementById('inputNewPassword').value = '';
+        tutupModalPassword();
+        document.getElementById('btnGantiPass').style.display = 'none';
+        document.getElementById('msgPassChanged').style.display = 'block';
+      }
     }
     btn.innerText = "Simpan Password Baru"; btn.disabled = false;
   }
