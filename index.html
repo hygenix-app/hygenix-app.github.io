@@ -143,7 +143,6 @@
     .admin-form input, .admin-form select, .admin-form textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; }
     .btn-primary { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
     
-    /* CSS UNTUK USER ITEM DI ADMIN */
     .user-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 8px; transition: 0.2s; }
     .user-item.inactive { opacity: 0.6; background: #f8fafc; border-style: dashed; }
     .user-info { flex: 1; display: flex; align-items: center; gap: 10px; }
@@ -155,7 +154,6 @@
     .btn-status { padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; border: none; color: white; min-width: 70px; text-align: center; }
     .btn-status.aktif { background: var(--primary); }
     .btn-status.nonaktif { background: var(--merah); }
-    .btn-reset { background: #cbd5e1; color: var(--teks); border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
     .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 100; overflow-x: auto; }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--teks-muted); font-size: 10px; font-weight: 600; cursor: pointer; padding: 5px 10px; transition: 0.2s; min-width: 65px; }
@@ -270,9 +268,15 @@
         <div class="eval-note" id="evalNoteText">Belum ada catatan.</div>
       </div>
 
-      <button id="btnBeriNilai" class="btn-primary" style="display:none; background:var(--kuning); margin-bottom: 10px;" onclick="bukaModalEvaluasi()">
-        <i data-lucide="edit" style="width:16px; display:inline; vertical-align:middle;"></i> Beri Nilai Evaluasi
-      </button>
+      <!-- TOMBOL AKSI EVALUASI (EDIT & HAPUS) -->
+      <div style="display: flex; gap: 10px; margin-bottom: 10px;" id="evalActionContainer">
+        <button id="btnBeriNilai" class="btn-primary" style="display:none; background:var(--kuning); flex: 1;" onclick="bukaModalEvaluasi()">
+          <i data-lucide="edit" style="width:16px; display:inline; vertical-align:middle;"></i> <span id="evalBtnText">Beri Nilai</span>
+        </button>
+        <button id="btnHapusEvaluasi" class="btn-primary" style="display:none; background:var(--merah); flex: 1;" onclick="hapusEvaluasi()">
+          <i data-lucide="trash-2" style="width:16px; display:inline; vertical-align:middle;"></i> Hapus
+        </button>
+      </div>
 
       <button id="btnCetakLaporan" class="btn-primary" style="display:none; background:var(--biru);" onclick="bukaModalLaporan()">
         <i data-lucide="file-text" style="width:16px; display:inline; vertical-align:middle;"></i> Buat Laporan Pendampingan
@@ -326,7 +330,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.0.0</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.9</p>
 
       </div>
     </div>
@@ -484,9 +488,11 @@
 <!-- MODAL EVALUASI -->
 <div id="modalEvaluasi" class="modal-overlay">
   <div class="modal-content">
-    <div class="modal-header"><div class="modal-title">Beri Nilai Evaluasi</div><button class="btn-close" onclick="tutupModalEvaluasi()"><i data-lucide="x"></i></button></div>
+    <div class="modal-header"><div class="modal-title" id="titleModalEvaluasi">Beri Nilai Evaluasi</div><button class="btn-close" onclick="tutupModalEvaluasi()"><i data-lucide="x"></i></button></div>
     <div class="admin-form" style="border:none; padding:0;">
       
+      <input type="hidden" id="editEvalId" value="">
+
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
         <label style="font-size:12px; font-weight:600; display:block;">A. Manajemen Organisasi (0-100)</label>
         <span id="labelManajemen" style="font-size: 11px; font-weight: bold; color: var(--primary);">Baik</span>
@@ -570,6 +576,7 @@
   let globalProkers = []; 
   let fullReportText = "";
   let isProkerCompletedLocked = false;
+  let currentEvaluationData = null; // Menyimpan data evaluasi terakhir untuk diedit/dihapus
 
   const rolesCanManageTasks = ['admin', 'mahasiswa', 'ketua', 'sekretaris', 'bendahara'];
 
@@ -628,7 +635,6 @@
     const { data: profile, error: profError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
 
     if (profile) {
-      // VALIDASI: Jika akun dinonaktifkan, tendang keluar
       if (profile.is_active === false) {
         await supabaseClient.auth.signOut();
         showToast("Akun Anda dinonaktifkan oleh Admin.", "error");
@@ -676,7 +682,7 @@
         loadDataKeuangan();
       }
       if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'guru') {
-        document.getElementById('btnBeriNilai').style.display = 'block';
+        document.getElementById('btnBeriNilai').style.display = 'flex';
         document.getElementById('btnCetakLaporan').style.display = 'block';
       }
       
@@ -1311,6 +1317,7 @@
 
     let skor = [0, 0, 0, 0, 0];
     let catatan = "Belum ada catatan evaluasi dari pembimbing.";
+    currentEvaluationData = evalData; // Simpan data ke variabel global
 
     if (evalData) {
       skor = [evalData.manajemen, evalData.proker, evalData.kaderisasi, evalData.aksi_nyata, evalData.pelaporan];
@@ -1318,6 +1325,14 @@
       
       document.getElementById('evalNoteContainer').style.display = 'block';
       document.getElementById('evalNoteText').innerText = catatan;
+
+      // Ubah tombol jadi Edit dan tampilkan tombol Hapus
+      document.getElementById('evalBtnText').innerText = "Edit Nilai";
+      document.getElementById('btnHapusEvaluasi').style.display = 'flex';
+    } else {
+      document.getElementById('evalNoteContainer').style.display = 'none';
+      document.getElementById('evalBtnText').innerText = "Beri Nilai";
+      document.getElementById('btnHapusEvaluasi').style.display = 'none';
     }
 
     const ctx = document.getElementById('radarChart').getContext('2d');
@@ -1371,6 +1386,30 @@
 
   function bukaModalEvaluasi() { 
     document.getElementById('modalEvaluasi').style.display = 'flex'; 
+    
+    if (currentEvaluationData) {
+      // Mode Edit: Isi form dengan data lama
+      document.getElementById('titleModalEvaluasi').innerText = "Edit Nilai Evaluasi";
+      document.getElementById('editEvalId').value = currentEvaluationData.id;
+      document.getElementById('evalManajemen').value = currentEvaluationData.manajemen;
+      document.getElementById('evalProker').value = currentEvaluationData.proker;
+      document.getElementById('evalKaderisasi').value = currentEvaluationData.kaderisasi;
+      document.getElementById('evalAksi').value = currentEvaluationData.aksi_nyata;
+      document.getElementById('evalPelaporan').value = currentEvaluationData.pelaporan;
+      document.getElementById('evalCatatan').value = currentEvaluationData.catatan || '';
+    } else {
+      // Mode Baru: Kosongkan form atau isi default
+      document.getElementById('titleModalEvaluasi').innerText = "Beri Nilai Evaluasi";
+      document.getElementById('editEvalId').value = "";
+      document.getElementById('evalManajemen').value = 80;
+      document.getElementById('evalProker').value = 80;
+      document.getElementById('evalKaderisasi').value = 80;
+      document.getElementById('evalAksi').value = 80;
+      document.getElementById('evalPelaporan').value = 80;
+      document.getElementById('evalCatatan').value = '';
+    }
+
+    // Update label (Sangat Baik, Baik, dll)
     updateLabelEval('evalManajemen', 'labelManajemen');
     updateLabelEval('evalProker', 'labelProker');
     updateLabelEval('evalKaderisasi', 'labelKaderisasi');
@@ -1381,6 +1420,7 @@
   function tutupModalEvaluasi() { document.getElementById('modalEvaluasi').style.display = 'none'; }
 
   async function simpanEvaluasi() {
+    const id = document.getElementById('editEvalId').value;
     const manajemen = parseInt(document.getElementById('evalManajemen').value);
     const proker = parseInt(document.getElementById('evalProker').value);
     const kaderisasi = parseInt(document.getElementById('evalKaderisasi').value);
@@ -1391,18 +1431,45 @@
 
     btn.innerText = "Menyimpan..."; btn.disabled = true;
 
-    const { error } = await supabaseClient.from('evaluasi').insert([{
-      manajemen: manajemen, proker: proker, kaderisasi: kaderisasi,
-      aksi_nyata: aksi, pelaporan: pelaporan, catatan: catatan, dinilai_oleh: currentUserId
-    }]);
+    let error;
+    if (id) {
+        // Mode Update (Edit)
+        const res = await supabaseClient.from('evaluasi').update({
+            manajemen: manajemen, proker: proker, kaderisasi: kaderisasi,
+            aksi_nyata: aksi, pelaporan: pelaporan, catatan: catatan
+        }).eq('id', id);
+        error = res.error;
+    } else {
+        // Mode Insert (Baru)
+        const res = await supabaseClient.from('evaluasi').insert([{
+            manajemen: manajemen, proker: proker, kaderisasi: kaderisasi,
+            aksi_nyata: aksi, pelaporan: pelaporan, catatan: catatan, dinilai_oleh: currentUserId
+        }]);
+        error = res.error;
+    }
 
-    if(error) showToast("Gagal menyimpan evaluasi: " + error.message, "error");
-    else {
-      showToast("Evaluasi berhasil disimpan!");
-      tutupModalEvaluasi();
-      loadEvaluasi(); 
+    if(error) {
+        showToast("Gagal menyimpan evaluasi: " + error.message, "error");
+    } else {
+        showToast(id ? "Evaluasi berhasil diperbarui!" : "Evaluasi berhasil disimpan!");
+        tutupModalEvaluasi();
+        loadEvaluasi(); 
     }
     btn.innerText = "Simpan Penilaian"; btn.disabled = false;
+  }
+
+  function hapusEvaluasi() {
+    if (!currentEvaluationData) return;
+    
+    showConfirm("Yakin ingin menghapus data evaluasi ini? Grafik akan di-reset.", async () => {
+        const { error } = await supabaseClient.from('evaluasi').delete().eq('id', currentEvaluationData.id);
+        if (error) {
+            showToast("Gagal menghapus evaluasi: " + error.message, "error");
+        } else {
+            showToast("Evaluasi berhasil dihapus.");
+            loadEvaluasi(); 
+        }
+    }, "Hapus Evaluasi");
   }
 
   // --- FUNGSI GENERATOR LAPORAN OTOMATIS ---
@@ -1562,7 +1629,7 @@
     });
   }
 
-  // 6. FUNGSI ADMIN PANEL (DENGAN FITUR NONAKTIFKAN USER)
+  // 6. FUNGSI ADMIN PANEL
   async function loadAllUsers() {
     const { data: users } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
     const listContainer = document.getElementById('userList'); listContainer.innerHTML = '';
@@ -1579,13 +1646,10 @@
           <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
         `;
 
-        // Tombol Status Aktif / Nonaktif
-        const isActive = u.is_active !== false; // Jika null/true, anggap aktif
+        const isActive = u.is_active !== false; 
         const btnStatusClass = isActive ? 'aktif' : 'nonaktif';
         const btnStatusText = isActive ? 'Aktif' : 'Nonaktif';
         const userItemClass = isActive ? '' : 'inactive';
-        
-        // Jangan biarkan admin menonaktifkan dirinya sendiri
         const disableBtn = (u.id === currentUserId) ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : '';
 
         const avatarHTML = u.avatar_url 
@@ -1612,7 +1676,6 @@
     lucide.createIcons();
   }
 
-  // Fungsi untuk mengubah status user (Soft Delete / Hide)
   function toggleUserStatus(userId, currentStatus) {
     const action = currentStatus ? "menonaktifkan" : "mengaktifkan";
     showConfirm(`Yakin ingin ${action} akun ini? Data yang pernah dibuat (Proker/Kas) tidak akan terhapus.`, async () => {
@@ -1743,10 +1806,7 @@
           installingWorker.onstatechange = function() {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
-                // MENGGANTI ALERT BAWAAN DENGAN TOAST CUSTOM
                 showToast('Aplikasi diperbarui! Memuat ulang...', 'success');
-                
-                // Delay reload 2 detik agar toast terlihat oleh user
                 setTimeout(() => {
                   window.location.reload();
                 }, 2000);
