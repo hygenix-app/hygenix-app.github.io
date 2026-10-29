@@ -112,7 +112,7 @@
     .feed-info { flex: 1; }
     .feed-name { font-size: 13px; font-weight: 700; }
     .feed-proker { font-size: 10px; color: var(--teks-muted); }
-    .feed-time { font-size: 9px; color: #94a3b8; margin-top: 2px; } /* Style Tanggal Feed Baru */
+    .feed-time { font-size: 9px; color: #94a3b8; margin-top: 2px; } 
     .feed-img { width: 100%; height: 200px; object-fit: cover; background: #e2e8f0; display: block; }
     .feed-body { padding: 12px; }
     .feed-desc { font-size: 12px; line-height: 1.5; margin-bottom: 10px; }
@@ -304,7 +304,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.3 (Fix Feed)</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.4 (Fix Join)</p>
 
       </div>
     </div>
@@ -748,7 +748,7 @@
 
   // FITUR DETAIL PROKER (CHECKLIST)
   let currentProkerIdForTasks = null;
-  let isCurrentProkerFuture = false; // Variabel untuk cek apakah proker masa depan
+  let isCurrentProkerFuture = false; 
 
   function bukaDetailProker(id) {
     currentProkerIdForTasks = id;
@@ -758,7 +758,6 @@
     document.getElementById('detailProkerId').value = id;
     document.getElementById('detailProkerJudul').innerText = proker.judul;
     
-    // Logika Pengecekan Tanggal Mulai
     const todayStr = new Date().toISOString().split('T')[0];
     isCurrentProkerFuture = proker.tanggal_mulai && (proker.tanggal_mulai > todayStr);
     
@@ -777,7 +776,6 @@
     }
     
     const canManage = rolesCanManageTasks.includes(currentUserRole);
-    // Sembunyikan input tambah tugas jika proker belum dimulai
     document.getElementById('inputTaskContainer').style.display = (canManage && !isCurrentProkerFuture) ? 'flex' : 'none';
 
     document.getElementById('modalDetailProker').style.display = 'flex';
@@ -812,7 +810,6 @@
         
         const isChecked = t.is_selesai ? 'checked' : '';
         const isDone = t.is_selesai ? 'done' : '';
-        // Cek jika proker belum dimulai, checkbox dibuat disabled
         const disabledClass = isCurrentProkerFuture ? 'disabled' : '';
         
         const canDeleteTask = rolesCanManageTasks.includes(currentUserRole) && !isCurrentProkerFuture;
@@ -859,7 +856,6 @@
   }
 
   async function toggleTugas(id, currentStatus) {
-    // Pengecekan Keamanan Ekstra: Jangan biarkan centang jika proker belum mulai
     if (isCurrentProkerFuture) {
        showToast("Tugas tidak bisa dicentang karena proker belum dimulai.", "warning");
        return;
@@ -1065,12 +1061,14 @@
     }, "Hapus Transaksi");
   }
 
-  // 4. FUNGSI AKSI NYATA (PERBAIKAN ERROR & TANGGAL)
+  // 4. FUNGSI AKSI NYATA (DIPERBAIKI DENGAN MANUAL JOIN)
   async function loadFeedAksi() {
     const search = document.getElementById('searchAksi').value.toLowerCase();
+    
+    // 1. Ambil data laporan tanpa join
     const { data: feeds, error } = await supabaseClient
       .from('laporan_aksi')
-      .select(`*, profiles:user_id (full_name, avatar_url), program_kerja:proker_id (judul)`)
+      .select('*')
       .order('created_at', { ascending: false });
 
     const list = document.getElementById('feedList');
@@ -1078,7 +1076,7 @@
     list.innerHTML = '';
 
     if (error) { 
-        console.error(error); // Tampilkan error di console untuk debug
+        console.error(error);
         list.innerHTML = '<p style="font-size:12px; text-align:center; color:#ef4444;">Gagal memuat feed: ' + error.message + '</p>'; 
         return; 
     }
@@ -1086,8 +1084,33 @@
     if (feeds && feeds.length > 0) {
       dashTotalAksi.innerText = feeds.length;
       
-      // PENGAMAN: Cek null values sebelum .toLowerCase()
-      let filteredFeeds = feeds.filter(f => {
+      // 2. Ambil data profil dan proker terpisah (Manual Join)
+      const userIds = [...new Set(feeds.map(f => f.user_id).filter(id => id))];
+      const prokerIds = [...new Set(feeds.map(f => f.proker_id).filter(id => id))];
+
+      let profilesData = [];
+      let prokersData = [];
+
+      if (userIds.length > 0) {
+          const { data: profiles } = await supabaseClient.from('profiles').select('id, full_name, avatar_url').in('id', userIds);
+          if (profiles) profilesData = profiles;
+      }
+      if (prokerIds.length > 0) {
+          const { data: prokers } = await supabaseClient.from('program_kerja').select('id, judul').in('id', prokerIds);
+          if (prokers) prokersData = prokers;
+      }
+
+      // 3. Gabungkan data
+      const enrichedFeeds = feeds.map(f => {
+          return {
+              ...f,
+              profiles: profilesData.find(p => p.id === f.user_id) || null,
+              program_kerja: prokersData.find(p => p.id === f.proker_id) || null
+          };
+      });
+
+      // 4. Filter data
+      let filteredFeeds = enrichedFeeds.filter(f => {
         const nama = (f.profiles && f.profiles.full_name) ? f.profiles.full_name : 'Anonim';
         const deskripsi = f.deskripsi || '';
         return deskripsi.toLowerCase().includes(search) || nama.toLowerCase().includes(search);
@@ -1104,7 +1127,6 @@
         const isMenunggu = f.status_validasi === 'Menunggu';
         const badgeColor = isMenunggu ? 'badge-pending' : 'badge-valid';
         
-        // FORMAT TANGGAL FEED
         const tglLapor = f.created_at ? new Date(f.created_at).toLocaleString('id-ID', {
           day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'
         }) : '-';
@@ -1125,7 +1147,7 @@
               <div class="feed-info">
                 <div class="feed-name">${namaPelapor}</div>
                 <div class="feed-proker">Proker: ${judulProker}</div>
-                <div class="feed-time">${tglLapor}</div> <!-- TANGGAL DITAMBAHKAN -->
+                <div class="feed-time">${tglLapor}</div>
               </div>
             </div>
             <img src="${f.foto_url}" class="feed-img" onerror="this.src='https://via.placeholder.com/400x200?text=Foto+Gagal+Dimuat'">
@@ -1608,7 +1630,7 @@
           installingWorker.onstatechange = function() {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
-                alert('Aplikasi telah diperbarui ke Versi 1.4.3! Halaman akan dimuat ulang.');
+                alert('Aplikasi telah diperbarui ke Versi 1.4.4! Halaman akan dimuat ulang.');
                 window.location.reload();
               }
             }
