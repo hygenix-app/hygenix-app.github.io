@@ -268,7 +268,6 @@
         <div class="eval-note" id="evalNoteText">Belum ada catatan.</div>
       </div>
 
-      <!-- TOMBOL AKSI EVALUASI (EDIT & HAPUS) -->
       <div style="display: flex; gap: 10px; margin-bottom: 10px;" id="evalActionContainer">
         <button id="btnBeriNilai" class="btn-primary" style="display:none; background:var(--kuning); flex: 1;" onclick="bukaModalEvaluasi()">
           <i data-lucide="edit" style="width:16px; display:inline; vertical-align:middle;"></i> <span id="evalBtnText">Beri Nilai</span>
@@ -330,7 +329,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.9</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.5.0 (Fix Delete V2)</p>
 
       </div>
     </div>
@@ -576,7 +575,7 @@
   let globalProkers = []; 
   let fullReportText = "";
   let isProkerCompletedLocked = false;
-  let currentEvaluationData = null; // Menyimpan data evaluasi terakhir untuk diedit/dihapus
+  let currentEvaluationData = null;
 
   const rolesCanManageTasks = ['admin', 'mahasiswa', 'ketua', 'sekretaris', 'bendahara'];
 
@@ -1136,11 +1135,19 @@
     btn.innerText = "Simpan Transaksi"; btn.disabled = false;
   }
 
+  // FIX HAPUS TRANSAKSI DENGAN .select() UNTUK CEK RLS
   function hapusTransaksi(id) {
     showConfirm("Yakin ingin menghapus catatan transaksi ini?", async () => {
-      const { error } = await supabaseClient.from('keuangan').delete().eq('id', id);
-      if(error) showToast("Gagal menghapus: " + error.message, "error");
-      else { loadDataKeuangan(); showToast("Transaksi dihapus."); }
+      const { data, error } = await supabaseClient.from('keuangan').delete().eq('id', id).select();
+      
+      if(error) {
+        showToast("Gagal menghapus: " + error.message, "error");
+      } else if (!data || data.length === 0) {
+        showToast("Gagal menghapus: Akses ditolak (RLS).", "error");
+      } else {
+        loadDataKeuangan(); 
+        showToast("Transaksi dihapus.");
+      }
     }, "Hapus Transaksi");
   }
 
@@ -1303,7 +1310,7 @@
       if (error) {
         showToast("Gagal menghapus laporan: " + error.message, "error");
       } else if (!data || data.length === 0) {
-        showToast("Gagal menghapus: Akses ditolak (RLS). Jalankan SQL di Supabase.", "error");
+        showToast("Gagal menghapus: Akses ditolak (RLS).", "error");
       } else {
         showToast("Laporan berhasil dihapus.");
         loadFeedAksi(); 
@@ -1317,7 +1324,7 @@
 
     let skor = [0, 0, 0, 0, 0];
     let catatan = "Belum ada catatan evaluasi dari pembimbing.";
-    currentEvaluationData = evalData; // Simpan data ke variabel global
+    currentEvaluationData = evalData; 
 
     if (evalData) {
       skor = [evalData.manajemen, evalData.proker, evalData.kaderisasi, evalData.aksi_nyata, evalData.pelaporan];
@@ -1326,7 +1333,6 @@
       document.getElementById('evalNoteContainer').style.display = 'block';
       document.getElementById('evalNoteText').innerText = catatan;
 
-      // Ubah tombol jadi Edit dan tampilkan tombol Hapus
       document.getElementById('evalBtnText').innerText = "Edit Nilai";
       document.getElementById('btnHapusEvaluasi').style.display = 'flex';
     } else {
@@ -1388,7 +1394,6 @@
     document.getElementById('modalEvaluasi').style.display = 'flex'; 
     
     if (currentEvaluationData) {
-      // Mode Edit: Isi form dengan data lama
       document.getElementById('titleModalEvaluasi').innerText = "Edit Nilai Evaluasi";
       document.getElementById('editEvalId').value = currentEvaluationData.id;
       document.getElementById('evalManajemen').value = currentEvaluationData.manajemen;
@@ -1398,7 +1403,6 @@
       document.getElementById('evalPelaporan').value = currentEvaluationData.pelaporan;
       document.getElementById('evalCatatan').value = currentEvaluationData.catatan || '';
     } else {
-      // Mode Baru: Kosongkan form atau isi default
       document.getElementById('titleModalEvaluasi').innerText = "Beri Nilai Evaluasi";
       document.getElementById('editEvalId').value = "";
       document.getElementById('evalManajemen').value = 80;
@@ -1409,7 +1413,6 @@
       document.getElementById('evalCatatan').value = '';
     }
 
-    // Update label (Sangat Baik, Baik, dll)
     updateLabelEval('evalManajemen', 'labelManajemen');
     updateLabelEval('evalProker', 'labelProker');
     updateLabelEval('evalKaderisasi', 'labelKaderisasi');
@@ -1433,14 +1436,12 @@
 
     let error;
     if (id) {
-        // Mode Update (Edit)
         const res = await supabaseClient.from('evaluasi').update({
             manajemen: manajemen, proker: proker, kaderisasi: kaderisasi,
             aksi_nyata: aksi, pelaporan: pelaporan, catatan: catatan
         }).eq('id', id);
         error = res.error;
     } else {
-        // Mode Insert (Baru)
         const res = await supabaseClient.from('evaluasi').insert([{
             manajemen: manajemen, proker: proker, kaderisasi: kaderisasi,
             aksi_nyata: aksi, pelaporan: pelaporan, catatan: catatan, dinilai_oleh: currentUserId
@@ -1458,13 +1459,17 @@
     btn.innerText = "Simpan Penilaian"; btn.disabled = false;
   }
 
+  // FIX HAPUS EVALUASI DENGAN .select() UNTUK CEK RLS
   function hapusEvaluasi() {
     if (!currentEvaluationData) return;
     
     showConfirm("Yakin ingin menghapus data evaluasi ini? Grafik akan di-reset.", async () => {
-        const { error } = await supabaseClient.from('evaluasi').delete().eq('id', currentEvaluationData.id);
+        const { data, error } = await supabaseClient.from('evaluasi').delete().eq('id', currentEvaluationData.id).select();
+        
         if (error) {
             showToast("Gagal menghapus evaluasi: " + error.message, "error");
+        } else if (!data || data.length === 0) {
+            showToast("Gagal menghapus: Akses ditolak (RLS).", "error");
         } else {
             showToast("Evaluasi berhasil dihapus.");
             loadEvaluasi(); 
