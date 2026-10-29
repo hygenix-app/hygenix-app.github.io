@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hygenix-v19'; // <-- NAIKKAN ANGKA INI SETIAP KALI UPDATE
+const CACHE_NAME = 'hygenix-v20'; // <-- NAIKKAN ANGKA INI SETIAP KALI UPDATE
 const urlsToCache = [
   './',
   './index.html',
