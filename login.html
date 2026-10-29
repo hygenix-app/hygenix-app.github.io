@@ -28,12 +28,13 @@
     .btn-login:active { transform: scale(0.98); }
     .btn-login:disabled { background: #94a3b8; cursor: not-allowed; }
 
-    .error-msg { background: #fee2e2; color: #991b1b; font-size: 12px; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; }
+    .error-msg { background: #fee2e2; color: #991b1b; font-size: 12px; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: left; }
   </style>
 </head>
 <body>
 
   <div class="login-container">
+    <!-- Pastikan file icon.png ada di folder yang sama -->
     <img src="icon.png" alt="Hygenix Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/80?text=H'">
     <div class="app-title">Hygenix</div>
     <div class="app-subtitle">COMMUNITY</div>
@@ -53,59 +54,45 @@
     </form>
   </div>
 
-<script>
-  // 1. PASTIKAN URL DAN KEY SUDAH BENAR
-  const SUPABASE_URL = 'https://konopkunbtcwnbbdiqxv.supabase.co'; // <-- GANTI DENGAN URL ANDA (Harus ada https://)
-  const SUPABASE_KEY = 'sb_publishable_LJHT38ry69jKpn8ux0I8SA_qtN0d-x3'; // <-- GANTI DENGAN KEY ANDA
+  <script>
+    // KONFIGURASI SUPABASE
+    const SUPABASE_URL = 'https://konopkunbtcwnbbdiqxv.supabase.co'; 
+    const SUPABASE_KEY = 'sb_publishable_LJHT38ry69jKpn8ux0I8SA_qtN0d-x3';
 
-  // Cek apakah library Supabase berhasil dimuat
-  if (typeof supabase === 'undefined') {
-    alert("Error Fatal: Library Supabase gagal dimuat. Periksa koneksi internet Anda.");
-  }
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let supabaseClient;
-  try {
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  } catch (err) {
-    alert("Error Inisialisasi: Pastikan URL Supabase valid. Pesan: " + err.message);
-  }
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('btnLogin');
+      const errorBox = document.getElementById('errorBox');
 
-  document.getElementById('loginForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const btn = document.getElementById('btnLogin');
-    const errorBox = document.getElementById('errorBox');
+      // Ubah tampilan tombol saat loading
+      btn.disabled = true;
+      btn.innerText = 'Memproses...';
+      errorBox.style.display = 'none';
 
-    // Ubah tombol jadi loading
-    btn.disabled = true;
-    btn.innerText = 'Memproses...';
-    errorBox.style.display = 'none';
-
-    try {
-      // Proses Login
+      // Proses Login ke Supabase
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: email,
         password: password,
       });
 
       if (error) {
-        // Tampilkan error dari Supabase (misal: password salah)
+        // Jika gagal login, tampilkan kotak merah (bukan popup hitam)
         errorBox.innerText = "Gagal: " + error.message;
         errorBox.style.display = 'block';
         btn.disabled = false;
         btn.innerText = 'Masuk ke Aplikasi';
       } else {
-        // Berhasil
-        alert("Login Berhasil! Selamat datang di Hygenix.");
-        window.location.href = 'index.html'; // Pastikan file dashboard Anda bernama index.html
+        // Jika berhasil, ubah teks tombol dan langsung pindah halaman TANPA ALERT
+        btn.innerText = 'Berhasil! Mengalihkan...';
+        btn.style.background = '#059669'; // Warna hijau lebih gelap
+        window.location.href = 'index.html'; 
       }
-    } catch (err) {
-      // Menangkap error jaringan atau error tak terduga
-      alert("Terjadi kesalahan sistem: " + err.message);
-      btn.disabled = false;
-      btn.innerText = 'Masuk ke Aplikasi';
-    }
-  });
-</script>
+    });
+  </script>
+</body>
+</html>
