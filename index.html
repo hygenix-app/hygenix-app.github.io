@@ -304,7 +304,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.4 (Fix Join)</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.5 (Fix Delete)</p>
 
       </div>
     </div>
@@ -1061,7 +1061,7 @@
     }, "Hapus Transaksi");
   }
 
-  // 4. FUNGSI AKSI NYATA (DIPERBAIKI DENGAN MANUAL JOIN)
+  // 4. FUNGSI AKSI NYATA (DIPERBAIKI DENGAN MANUAL JOIN & FIX HAPUS)
   async function loadFeedAksi() {
     const search = document.getElementById('searchAksi').value.toLowerCase();
     
@@ -1219,9 +1219,18 @@
 
   function hapusLaporan(id) {
     showConfirm("Yakin ingin menghapus laporan ini?", async () => {
-      const { error } = await supabaseClient.from('laporan_aksi').delete().eq('id', id);
-      if (error) showToast("Gagal menghapus laporan: " + error.message, "error");
-      else { showToast("Laporan dihapus."); loadFeedAksi(); }
+      // Menggunakan .select() untuk memastikan data benar-benar terhapus
+      const { data, error } = await supabaseClient.from('laporan_aksi').delete().eq('id', id).select();
+      
+      if (error) {
+        showToast("Gagal menghapus laporan: " + error.message, "error");
+      } else if (!data || data.length === 0) {
+        // Jika data kosong, berarti terblokir oleh aturan keamanan (RLS) Supabase
+        showToast("Gagal menghapus: Akses ditolak (RLS). Jalankan SQL di Supabase.", "error");
+      } else {
+        showToast("Laporan berhasil dihapus.");
+        loadFeedAksi(); 
+      }
     }, "Hapus Laporan");
   }
 
@@ -1630,7 +1639,7 @@
           installingWorker.onstatechange = function() {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
-                alert('Aplikasi telah diperbarui ke Versi 1.4.4! Halaman akan dimuat ulang.');
+                alert('Aplikasi telah diperbarui ke Versi 1.4.5! Halaman akan dimuat ulang.');
                 window.location.reload();
               }
             }
