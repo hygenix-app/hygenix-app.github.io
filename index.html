@@ -249,7 +249,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <!-- VERSI APLIKASI (TAMBAHAN BARU) -->
+        <!-- VERSI APLIKASI -->
         <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.1.0</p>
 
       </div>
@@ -971,7 +971,8 @@
     if (error) {
       showToast("Gagal ubah role: " + error.message, "error");
     } else if (!data || data.length === 0) {
-      showToast("Gagal ubah role: Akses ditolak oleh Database (RLS).", "error");
+      // Jika data kosong, RLS memblokir tanpa error
+      showToast("Gagal: Akses ditolak (RLS). Pastikan Anda Admin.", "error");
     } else {
       showToast("Role diubah menjadi " + newRole.toUpperCase());
     }
