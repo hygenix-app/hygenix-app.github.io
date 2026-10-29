@@ -248,6 +248,10 @@
         <button onclick="logout()" style="width: 100%; padding: 14px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;">
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
+
+        <!-- VERSI APLIKASI (TAMBAHAN BARU) -->
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.1.0</p>
+
       </div>
     </div>
 
@@ -439,7 +443,7 @@
     const user = session.user;
     currentUserId = user.id;
 
-    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+    const { data: profile, error: profError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
 
     if (profile) {
       document.getElementById('profilNama').innerText = profile.full_name || "User";
@@ -448,7 +452,8 @@
       document.getElementById('headerAvatar').innerText = (profile.full_name || "U").charAt(0).toUpperCase();
       currentUserRole = profile.role;
 
-      if (profile.has_changed_password) {
+      // Logika Hide tombol ganti password
+      if (profile.has_changed_password === true) {
         document.getElementById('btnGantiPass').style.display = 'none';
         document.getElementById('msgPassChanged').style.display = 'block';
       } else {
@@ -475,6 +480,8 @@
       
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('trxTanggal').value = today;
+    } else {
+        console.error("Gagal ambil profil", profError);
     }
   }
 
@@ -964,7 +971,6 @@
     if (error) {
       showToast("Gagal ubah role: " + error.message, "error");
     } else if (!data || data.length === 0) {
-      // Jika data kosong, berarti RLS memblokir update meskipun tidak ada error
       showToast("Gagal ubah role: Akses ditolak oleh Database (RLS).", "error");
     } else {
       showToast("Role diubah menjadi " + newRole.toUpperCase());
@@ -1008,19 +1014,19 @@
     if(authError) {
       showToast("Gagal ganti password: " + authError.message, "error");
     } else {
-      // Coba update flag di database
       const { data: profileData, error: profileError } = await supabaseClient
         .from('profiles')
         .update({ has_changed_password: true })
         .eq('id', currentUserId)
-        .select(); // Tambahkan select untuk mengecek apakah update berhasil
+        .select(); 
 
       if(profileError) {
-        showToast("Password diubah, tapi gagal update status: " + profileError.message, "error");
+        showToast("Password diganti, tapi status gagal disimpan: " + profileError.message, "error");
       } else if (!profileData || profileData.length === 0) {
-        showToast("Password diubah, tapi status gagal disimpan (RLS).", "error");
+        showToast("Gagal menyimpan status (Akses ditolak). Hubungi Admin.", "error");
       } else {
-        showToast("Password berhasil diubah! Tombol ganti password disembunyikan.");
+        showToast("Password berhasil diubah! Silakan login kembali nanti.");
+        
         document.getElementById('inputNewPassword').value = '';
         tutupModalPassword();
         document.getElementById('btnGantiPass').style.display = 'none';
