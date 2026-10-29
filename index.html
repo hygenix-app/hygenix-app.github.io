@@ -25,8 +25,6 @@
       --merah: #ef4444;
       --kuning: #f59e0b;
       --biru: #3b82f6;
-      --ungu: #8b5cf6;
-      --oranye: #f97316;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
@@ -61,9 +59,8 @@
     .stat-label { font-size: 11px; color: var(--teks-muted); font-weight: 600; }
     .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-    /* PROKER CARD & BADGE TIPE */
+    /* PROKER CARD (Animasi Klik Dihilangkan) */
     .proker-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; cursor: pointer; transition: 0.2s; }
-    .proker-card:active { transform: scale(0.98); }
     .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-right: 60px; }
     .progress-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
     .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s; }
@@ -73,17 +70,15 @@
     .badge-pending { background: #fef08a; color: #854d0e; }
     .badge-proses { background: #dbeafe; color: #1e40af; }
     .badge-valid { background: #dcfce7; color: #166534; }
-    .badge-clickable { cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .badge-clickable:active { transform: scale(0.95); }
 
-    /* BADGE TIPE PROKER */
     .badge-tipe { font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-right: 5px; }
     .tipe-mingguan { background: #e0f2fe; color: #0369a1; }
     .tipe-bulanan { background: #f3e8ff; color: #6b21a8; }
     .tipe-insidental { background: #ffedd5; color: #9a3412; }
 
     .aksi-container { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; z-index: 2;}
-    .btn-aksi-kecil { background: none; border: none; cursor: pointer; padding: 5px; }
+    .btn-aksi-kecil { background: none; border: none; cursor: pointer; padding: 5px; transition: 0.1s; }
+    .btn-aksi-kecil:active { transform: scale(0.85); } /* Efek tekan hanya di tombol */
 
     .task-list { margin-top: 15px; margin-bottom: 15px; }
     .task-item { display: flex; align-items: center; gap: 10px; background: white; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 8px; }
@@ -125,7 +120,6 @@
     .chart-container { background: var(--card); padding: 15px; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; margin-bottom: 20px; position: relative; height: 300px; }
     .eval-note { background: #fffbeb; border: 1px solid #fde047; padding: 15px; border-radius: 12px; font-size: 12px; color: #854d0e; line-height: 1.5; }
 
-    /* LAPORAN OTOMATIS STYLES */
     .report-box { background: white; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px; overflow-y: auto; margin-bottom: 15px; line-height: 1.5; }
     .btn-copy { width: 100%; padding: 12px; background: var(--biru); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
 
@@ -258,7 +252,6 @@
         <i data-lucide="edit" style="width:16px; display:inline; vertical-align:middle;"></i> Beri Nilai Evaluasi
       </button>
 
-      <!-- TOMBOL CETAK LAPORAN (Hanya untuk Mahasiswa/Admin/Guru) -->
       <button id="btnCetakLaporan" class="btn-primary" style="display:none; background:var(--biru);" onclick="bukaModalLaporan()">
         <i data-lucide="file-text" style="width:16px; display:inline; vertical-align:middle;"></i> Buat Laporan Pendampingan
       </button>
@@ -309,7 +302,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.0</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.2 (Auto Status)</p>
 
       </div>
     </div>
@@ -344,17 +337,28 @@
     
     <div class="admin-form" style="padding:0; border:none; margin-bottom:15px;">
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Pilih Periode Laporan</label>
-      <select id="periodeLaporan">
+      <select id="periodeLaporan" onchange="aturTanggalLaporan()">
         <option value="minggu">Laporan Minggu Ini</option>
         <option value="bulan">Laporan Bulan Ini</option>
         <option value="semua">Semua Data (Keseluruhan)</option>
+        <option value="kustom">Pilih Tanggal Sendiri (Kustom)</option>
       </select>
-      <button class="btn-primary" style="background:var(--primary); margin-top:5px;" onclick="generateLaporan()">Generate Laporan</button>
+
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <div style="flex: 1;">
+          <label style="font-size:11px; font-weight:600; color:var(--teks-muted); margin-bottom:3px; display:block;">Dari Tanggal</label>
+          <input type="date" id="laporanMulai" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:13px;">
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size:11px; font-weight:600; color:var(--teks-muted); margin-bottom:3px; display:block;">Sampai Tanggal</label>
+          <input type="date" id="laporanSelesai" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:13px;">
+        </div>
+      </div>
+
+      <button class="btn-primary" style="background:var(--primary); margin-top:10px;" onclick="generateLaporan()">Generate Laporan</button>
     </div>
 
-    <div class="report-box" id="hasilLaporanBox" style="display:none;">
-      <!-- Teks laporan akan muncul di sini -->
-    </div>
+    <div class="report-box" id="hasilLaporanBox" style="display:none;"></div>
 
     <button class="btn-copy" id="btnCopyLaporan" style="display:none;" onclick="copyLaporanText()">
       <i data-lucide="copy" style="width:18px; height:18px;"></i> Copy Teks Laporan
@@ -399,7 +403,6 @@
       <input type="text" id="prokerJudul" placeholder="Judul Kegiatan">
       <textarea id="prokerDesk" placeholder="Deskripsi Singkat..." rows="2"></textarea>
       
-      <!-- TIPE PROKER BARU -->
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Tipe Program Kerja</label>
       <select id="prokerTipe" style="width:100%; padding:10px; margin-bottom:10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px;">
         <option value="Mingguan">Mingguan</option>
@@ -514,7 +517,7 @@
   let confirmCallback = null;
   let filterKasTipe = 'all';
   let globalProkers = []; 
-  let fullReportText = ""; // Untuk menyimpan teks laporan sebelum di-copy
+  let fullReportText = "";
 
   const rolesCanManageTasks = ['admin', 'mahasiswa', 'ketua', 'sekretaris', 'bendahara'];
 
@@ -612,7 +615,6 @@
         document.getElementById('navKeuangan').style.display = 'flex';
         loadDataKeuangan();
       }
-      // Tampilkan tombol evaluasi & cetak laporan untuk Mahasiswa/Admin/Guru
       if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'guru') {
         document.getElementById('btnBeriNilai').style.display = 'block';
         document.getElementById('btnCetakLaporan').style.display = 'block';
@@ -657,7 +659,7 @@
     }
   }
 
-  // 2. FUNGSI PROKER
+  // 2. FUNGSI PROKER (Status Otomatis)
   async function loadDataProker() {
     const search = document.getElementById('searchProker').value.toLowerCase();
     const { data: prokers } = await supabaseClient.from('program_kerja').select('*').order('created_at', { ascending: false });
@@ -688,14 +690,18 @@
         const tugasSelesai = tasksProker.filter(t => t.is_selesai).length;
         let percent = totalTugas > 0 ? Math.round((tugasSelesai / totalTugas) * 100) : 0;
 
+        // --- LOGIKA OPSI A: STATUS OTOMATIS ---
+        let statusText = 'Rencana';
         let badgeClass = 'badge-pending';
-        if(p.status === 'Berjalan') badgeClass = 'badge-proses';
-        if(p.status === 'Selesai') badgeClass = 'badge-valid';
 
-        const canChangeStatus = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris' || currentUserRole === 'guru');
-        const onclickStatus = canChangeStatus ? `onclick="event.stopPropagation(); ubahStatusProker('${p.id}', '${p.status}')"` : '';
-        const cursorStyle = canChangeStatus ? 'badge-clickable' : '';
-        const iconRefresh = canChangeStatus ? `<i data-lucide="refresh-cw" style="width:10px; display:inline;"></i>` : '';
+        if (percent > 0 && percent < 100) {
+            statusText = 'Berjalan';
+            badgeClass = 'badge-proses';
+        } else if (percent === 100 && totalTugas > 0) {
+            statusText = 'Selesai';
+            badgeClass = 'badge-valid';
+        }
+        // --------------------------------------
 
         let actionBtns = '';
         if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris') {
@@ -707,7 +713,6 @@
            `;
         }
 
-        // LOGIKA BADGE TIPE PROKER
         let tipeClass = 'tipe-insidental';
         if(p.tipe_proker === 'Mingguan') tipeClass = 'tipe-mingguan';
         if(p.tipe_proker === 'Bulanan') tipeClass = 'tipe-bulanan';
@@ -722,13 +727,13 @@
             <p style="font-size:11px; color:var(--teks-muted); margin-bottom:10px;">${p.deskripsi || '-'}</p>
             <div class="progress-container"><div class="progress-bar" style="width: ${percent}%;"></div></div>
             <div class="proker-meta">
-              <span class="badge ${badgeClass} ${cursorStyle}" ${onclickStatus}>${p.status} ${iconRefresh}</span>
+              <span class="badge ${badgeClass}">${statusText}</span>
               <span>${percent}% Selesai</span>
             </div>
           </div>
         `;
 
-        if(index < 3) dashProker.innerHTML += `<div class="proker-card"><div class="proker-title">${p.judul}</div><div class="progress-container"><div class="progress-bar" style="width: ${percent}%;"></div></div><div class="proker-meta"><span>${p.status}</span> <span>${percent}%</span></div></div>`;
+        if(index < 3) dashProker.innerHTML += `<div class="proker-card"><div class="proker-title">${p.judul}</div><div class="progress-container"><div class="progress-bar" style="width: ${percent}%;"></div></div><div class="proker-meta"><span>${statusText}</span> <span>${percent}%</span></div></div>`;
         
         dropdownProker.innerHTML += `<option value="${p.id}">${p.judul}</option>`;
       });
@@ -764,7 +769,7 @@
     document.getElementById('modalDetailProker').style.display = 'none';
     document.getElementById('inputNewTask').value = '';
     currentProkerIdForTasks = null;
-    loadDataProker();
+    loadDataProker(); // Refresh list agar status otomatis berubah jika ada yg di-centang
   }
 
   async function loadTugasProker(prokerId) {
@@ -894,6 +899,7 @@
       }).eq('id', id);
       error = res.error;
     } else {
+      // Status default di database adalah 'Rencana', tapi UI kita mengabaikannya dan menghitung otomatis
       const res = await supabaseClient.from('program_kerja').insert([{
         judul: judul, deskripsi: deskripsi, tipe_proker: tipe, tanggal_mulai: mulai, target_selesai: target || null, status: 'Rencana', created_by: currentUserId
       }]);
@@ -908,16 +914,7 @@
     btn.innerText = "Simpan Proker"; btn.disabled = false;
   }
 
-  async function ubahStatusProker(id, currentStatus) {
-    if(currentUserRole !== 'admin' && currentUserRole !== 'mahasiswa' && currentUserRole !== 'ketua' && currentUserRole !== 'sekretaris' && currentUserRole !== 'guru') return;
-    let newStatus = 'Rencana';
-    if(currentStatus === 'Rencana') newStatus = 'Berjalan';
-    else if(currentStatus === 'Berjalan') newStatus = 'Selesai';
-    
-    const { error } = await supabaseClient.from('program_kerja').update({ status: newStatus }).eq('id', id);
-    if(error) showToast("Gagal ubah status: " + error.message, "error");
-    else loadDataProker();
-  }
+  // Fungsi ubahStatusProker DIHAPUS karena status sudah otomatis.
 
   function hapusProker(id) {
     showConfirm("Yakin ingin menghapus proker ini? Semua tugas dan laporan terkait juga akan terhapus.", async () => {
@@ -1235,61 +1232,76 @@
     btn.innerText = "Simpan Penilaian"; btn.disabled = false;
   }
 
-  // --- FUNGSI GENERATOR LAPORAN OTOMATIS (BARU) ---
+  // --- FUNGSI GENERATOR LAPORAN OTOMATIS ---
   function bukaModalLaporan() {
     document.getElementById('modalLaporan').style.display = 'flex';
     document.getElementById('hasilLaporanBox').style.display = 'none';
     document.getElementById('btnCopyLaporan').style.display = 'none';
     document.getElementById('hasilLaporanBox').innerText = '';
+    aturTanggalLaporan(); 
   }
 
   function tutupModalLaporan() {
     document.getElementById('modalLaporan').style.display = 'none';
   }
 
-  async function generateLaporan() {
+  function aturTanggalLaporan() {
     const periode = document.getElementById('periodeLaporan').value;
+    const inputMulai = document.getElementById('laporanMulai');
+    const inputSelesai = document.getElementById('laporanSelesai');
+    const today = new Date();
+    
+    const formatDateLocal = (date) => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    };
+
+    if (periode === 'minggu') {
+      const day = today.getDay();
+      const diff = today.getDate() - day + (day === 0 ? -6 : 1); 
+      const start = new Date(today.setDate(diff));
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      inputMulai.value = formatDateLocal(start);
+      inputSelesai.value = formatDateLocal(end);
+    } else if (periode === 'bulan') {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      inputMulai.value = formatDateLocal(start);
+      inputSelesai.value = formatDateLocal(end);
+    } else if (periode === 'semua') {
+      inputMulai.value = '2020-01-01';
+      inputSelesai.value = '2099-12-31';
+    } else if (periode === 'kustom') {
+      if(!inputMulai.value) inputMulai.value = formatDateLocal(today);
+      if(!inputSelesai.value) inputSelesai.value = formatDateLocal(today);
+    }
+  }
+
+  async function generateLaporan() {
+    const startStr = document.getElementById('laporanMulai').value;
+    const endStr = document.getElementById('laporanSelesai').value;
     const btn = event.target;
+
+    if(!startStr || !endStr) {
+      showToast("Pilih tanggal mulai dan selesai!", "error");
+      return;
+    }
+
     btn.innerText = "Menarik Data..."; btn.disabled = true;
 
     try {
-      // Tentukan rentang tanggal
-      const now = new Date();
-      let startDate = new Date();
-      let endDate = new Date();
-
-      if (periode === 'minggu') {
-        // Minggu ini (Senin - Minggu)
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-        startDate = new Date(now.setDate(diff));
-        startDate.setHours(0,0,0,0);
-        endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 6);
-        endDate.setHours(23,59,59,999);
-      } else if (periode === 'bulan') {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-      } else {
-        startDate = new Date(2000, 0, 1); // Semua data
-        endDate = new Date(2100, 11, 31);
-      }
-
-      const startStr = startDate.toISOString().split('T')[0];
-      const endStr = endDate.toISOString().split('T')[0];
-
-      // Tarik Data
       const { data: prokers } = await supabaseClient.from('program_kerja').select('*');
       const { data: tasks } = await supabaseClient.from('tugas_proker').select('*');
       const { data: laporan } = await supabaseClient.from('laporan_aksi').select('*');
       const { data: kas } = await supabaseClient.from('keuangan').select('*');
       const { data: evalData } = await supabaseClient.from('evaluasi').select('*').order('created_at', { ascending: false }).limit(1).single();
 
-      // Filter Data berdasarkan periode
       const filteredProkers = (prokers || []).filter(p => {
         const pMulai = p.tanggal_mulai || '2000-01-01';
         const pSelesai = p.target_selesai || '2100-12-31';
-        // Proker masuk periode jika tanggal mulainya <= endDate DAN tanggal selesainya >= startDate
         return pMulai <= endStr && pSelesai >= startStr;
       });
 
@@ -1302,18 +1314,22 @@
         return k.tanggal >= startStr && k.tanggal <= endStr;
       });
 
-      // Susun Teks Laporan
       let text = `LAPORAN PERKEMBANGAN HYGENIX COMMUNITY\n`;
       text += `Periode: ${startStr} s/d ${endStr}\n`;
       text += `--------------------------------------------------\n\n`;
 
-      text += `1. RINGKASAN PROGRAM KERJA (${filteredProkers.length} Proker Aktif)\n`;
+      text += `1. RINGKASAN PROGRAM KERJA (${filteredProkers.length} Proker)\n`;
       if (filteredProkers.length > 0) {
         filteredProkers.forEach(p => {
           const pTasks = (tasks || []).filter(t => t.proker_id === p.id);
           const doneTasks = pTasks.filter(t => t.is_selesai).length;
           let percent = pTasks.length > 0 ? Math.round((doneTasks / pTasks.length) * 100) : 0;
-          text += `   - [${p.status}] ${p.judul} (${p.tipe_proker || 'Insidental'}) - Progres: ${percent}%\n`;
+          
+          let statusText = 'Rencana';
+          if (percent > 0 && percent < 100) statusText = 'Berjalan';
+          else if (percent === 100 && pTasks.length > 0) statusText = 'Selesai';
+
+          text += `   - [${statusText}] ${p.judul} (${p.tipe_proker || 'Insidental'}) - Progres: ${percent}%\n`;
         });
       } else {
         text += `   - Tidak ada program kerja pada periode ini.\n`;
@@ -1366,8 +1382,6 @@
 
   function copyLaporanText() {
     if(!fullReportText) return;
-    
-    // Gunakan API Clipboard
     navigator.clipboard.writeText(fullReportText).then(() => {
       showToast("Teks laporan berhasil di-copy! Silakan paste di Word/Docs.");
     }).catch(err => {
@@ -1557,7 +1571,7 @@
           installingWorker.onstatechange = function() {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
-                alert('Aplikasi telah diperbarui ke Versi 1.4.0! Halaman akan dimuat ulang.');
+                alert('Aplikasi telah diperbarui ke Versi 1.4.2! Halaman akan dimuat ulang.');
                 window.location.reload();
               }
             }
