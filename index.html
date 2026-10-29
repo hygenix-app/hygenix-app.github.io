@@ -80,7 +80,6 @@
     .btn-aksi-kecil { background: none; border: none; cursor: pointer; padding: 5px; transition: 0.1s; }
     .btn-aksi-kecil:active { transform: scale(0.85); } 
 
-    /* UI CHECKLIST BARU */
     .task-list { margin-top: 15px; margin-bottom: 15px; }
     .task-item { 
       display: flex; align-items: center; gap: 12px; 
@@ -143,14 +142,20 @@
     .admin-form { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
     .admin-form input, .admin-form select, .admin-form textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px; }
     .btn-primary { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    .user-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 8px; }
+    
+    /* CSS UNTUK USER ITEM DI ADMIN */
+    .user-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 8px; transition: 0.2s; }
+    .user-item.inactive { opacity: 0.6; background: #f8fafc; border-style: dashed; }
     .user-info { flex: 1; display: flex; align-items: center; gap: 10px; }
     .user-avatar-sm { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; justify-content: center; align-items: center; font-weight: bold; overflow: hidden; border: 1px solid #cbd5e1; }
     .user-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
     .user-name { font-size: 13px; font-weight: 700; }
     .user-email { font-size: 11px; color: var(--teks-muted); }
     .user-role-select { padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 11px; font-family: inherit; font-weight: bold; background: #f8fafc; }
-    .btn-reset { background: var(--merah); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
+    .btn-status { padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; border: none; color: white; min-width: 70px; text-align: center; }
+    .btn-status.aktif { background: var(--primary); }
+    .btn-status.nonaktif { background: var(--merah); }
+    .btn-reset { background: #cbd5e1; color: var(--teks); border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; }
 
     .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0; border-radius: 24px 24px 0 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); z-index: 100; overflow-x: auto; }
     .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--teks-muted); font-size: 10px; font-weight: 600; cursor: pointer; padding: 5px 10px; transition: 0.2s; min-width: 65px; }
@@ -277,12 +282,14 @@
     <!-- TAB 6: ADMIN PANEL -->
     <div id="tab-admin" class="tab-pane">
       <h2 class="section-title"><i data-lucide="shield"></i> Kelola Pengguna</h2>
+      
       <div class="admin-form">
         <h3 style="font-size: 13px; margin-bottom: 10px;">Tambah Akun Baru</h3>
         <input type="text" id="newName" placeholder="Nama Lengkap">
         <input type="text" id="newEmail" placeholder="Email (Cth: budi@hygenix.com)">
         <button class="btn-primary" id="btnBuatAkun" onclick="tambahPengguna()">Buat Akun</button>
       </div>
+      
       <h3 style="font-size: 13px; margin-bottom: 10px;">Daftar Akun Terdaftar</h3>
       <div id="userList"></div>
     </div>
@@ -319,7 +326,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.7 (Fix Notif)</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.8 (Soft Delete)</p>
 
       </div>
     </div>
@@ -562,7 +569,7 @@
   let filterKasTipe = 'all';
   let globalProkers = []; 
   let fullReportText = "";
-  let isProkerCompletedLocked = false; // Variabel baru untuk mengunci checklist jika 100%
+  let isProkerCompletedLocked = false;
 
   const rolesCanManageTasks = ['admin', 'mahasiswa', 'ketua', 'sekretaris', 'bendahara'];
 
@@ -610,7 +617,7 @@
     loadDataKeuangan();
   }
 
-  // 1. CEK SESI
+  // 1. CEK SESI & BLOKIR JIKA DIAKTIFKAN
   async function checkUserSession() {
     const { data: { session }, error } = await supabaseClient.auth.getSession();
     if (error || !session) { window.location.href = 'login.html'; return; }
@@ -621,6 +628,14 @@
     const { data: profile, error: profError } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
 
     if (profile) {
+      // VALIDASI: Jika akun dinonaktifkan, tendang keluar
+      if (profile.is_active === false) {
+        await supabaseClient.auth.signOut();
+        showToast("Akun Anda dinonaktifkan oleh Admin.", "error");
+        setTimeout(() => { window.location.href = 'login.html'; }, 2500);
+        return;
+      }
+
       document.getElementById('profilNama').innerText = profile.full_name || "User";
       document.getElementById('profilEmail').innerText = profile.email;
       document.getElementById('profilRole').innerText = "Jabatan: " + (profile.role ? profile.role.toUpperCase() : "ANGGOTA");
@@ -704,7 +719,7 @@
     }
   }
 
-  // 2. FUNGSI PROKER (Status Otomatis & Masa Depan)
+  // 2. FUNGSI PROKER
   async function loadDataProker() {
     const search = document.getElementById('searchProker').value.toLowerCase();
     const { data: prokers } = await supabaseClient.from('program_kerja').select('*').order('created_at', { ascending: false });
@@ -852,12 +867,9 @@
       });
 
       const percent = Math.round((selesaiCount / tasks.length) * 100);
-      
-      // Cek apakah progress sudah 100% (Selesai)
       isProkerCompletedLocked = (percent === 100);
       const isPengurus = rolesCanManageTasks.includes(currentUserRole);
 
-      // Sembunyikan input tambah tugas jika sudah 100% dan yang login bukan pengurus
       const canAddTask = isPengurus && !isProkerCompletedLocked && !isCurrentProkerFuture;
       document.getElementById('inputTaskContainer').style.display = canAddTask ? 'flex' : 'none';
 
@@ -865,12 +877,9 @@
         const isChecked = t.is_selesai ? 'checked' : '';
         const isDone = t.is_selesai ? 'done' : '';
         
-        // Tentukan apakah checkbox bisa diklik
-        // Tidak bisa diklik jika: proker belum mulai ATAU (proker selesai 100% DAN user bukan pengurus)
         const isLockedForUser = isCurrentProkerFuture || (isProkerCompletedLocked && !isPengurus);
         const disabledClass = isLockedForUser ? 'disabled' : '';
         
-        // Hapus tombol 'x' jika terkunci
         const canDeleteTask = isPengurus && !isCurrentProkerFuture;
         const btnHapusTask = canDeleteTask ? `<button onclick="hapusTugas('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer;"><i data-lucide="x" style="width:16px;"></i></button>` : '';
 
@@ -919,7 +928,6 @@
        return;
     }
 
-    // Validasi Keamanan Ekstra: Cegah anggota mencentang jika proker sudah 100% selesai
     if (isProkerCompletedLocked && !rolesCanManageTasks.includes(currentUserRole)) {
        showToast("Proker sudah selesai. Hanya pengurus inti yang bisa mengubah.", "warning");
        return;
@@ -1554,7 +1562,7 @@
     });
   }
 
-  // 6. FUNGSI ADMIN PANEL
+  // 6. FUNGSI ADMIN PANEL (DENGAN FITUR NONAKTIFKAN USER)
   async function loadAllUsers() {
     const { data: users } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
     const listContainer = document.getElementById('userList'); listContainer.innerHTML = '';
@@ -1571,19 +1579,21 @@
           <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
         `;
 
-        let btnReset = '';
-        if (u.has_changed_password) {
-            btnReset = `<button class="btn-reset" onclick="resetPassword('${u.id}')">Reset</button>`;
-        } else {
-            btnReset = `<span style="font-size: 10px; color: #94a3b8; font-weight: bold; padding: 6px;">Default</span>`;
-        }
+        // Tombol Status Aktif / Nonaktif
+        const isActive = u.is_active !== false; // Jika null/true, anggap aktif
+        const btnStatusClass = isActive ? 'aktif' : 'nonaktif';
+        const btnStatusText = isActive ? 'Aktif' : 'Nonaktif';
+        const userItemClass = isActive ? '' : 'inactive';
+        
+        // Jangan biarkan admin menonaktifkan dirinya sendiri
+        const disableBtn = (u.id === currentUserId) ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : '';
 
         const avatarHTML = u.avatar_url 
           ? `<img src="${u.avatar_url}">` 
           : `${(u.full_name || "U").charAt(0).toUpperCase()}`;
 
         listContainer.innerHTML += `
-          <div class="user-item">
+          <div class="user-item ${userItemClass}">
             <div class="user-info">
               <div class="user-avatar-sm">${avatarHTML}</div>
               <div>
@@ -1591,15 +1601,33 @@
                 <div class="user-email">${u.email}</div>
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end;">
               <select class="user-role-select" onchange="ubahRole('${u.id}', this.value)">${roleOptions}</select>
-              ${btnReset}
+              <button class="btn-status ${btnStatusClass}" onclick="toggleUserStatus('${u.id}', ${isActive})" ${disableBtn}>${btnStatusText}</button>
             </div>
           </div>
         `;
       });
     }
     lucide.createIcons();
+  }
+
+  // Fungsi untuk mengubah status user (Soft Delete / Hide)
+  function toggleUserStatus(userId, currentStatus) {
+    const action = currentStatus ? "menonaktifkan" : "mengaktifkan";
+    showConfirm(`Yakin ingin ${action} akun ini? Data yang pernah dibuat (Proker/Kas) tidak akan terhapus.`, async () => {
+      const newStatus = !currentStatus;
+      const { data, error } = await supabaseClient.from('profiles').update({ is_active: newStatus }).eq('id', userId).select();
+      
+      if (error) {
+        showToast("Gagal mengubah status: " + error.message, "error");
+      } else if (!data || data.length === 0) {
+        showToast("Gagal: Akses ditolak (RLS).", "error");
+      } else {
+        showToast(`Akun berhasil di${action}kan.`);
+        loadAllUsers();
+      }
+    }, currentStatus ? "Nonaktifkan Akun" : "Aktifkan Akun");
   }
 
   async function tambahPengguna() {
@@ -1642,27 +1670,6 @@
     } else {
       showToast("Role diubah menjadi " + newRole.toUpperCase());
     }
-  }
-
-  function resetPassword(userId) {
-    showConfirm("Yakin ingin mereset password user ini menjadi (hygenix2026)?", async () => {
-      try {
-        const { data, error } = await supabaseClient.functions.invoke('reset-password', {
-          body: { user_id: userId }
-        });
-
-        if (error) throw error;
-        if (data.error) throw new Error(data.error);
-
-        await supabaseClient.from('profiles').update({ has_changed_password: false }).eq('id', userId);
-        
-        showToast("Password berhasil direset ke default.");
-        loadAllUsers(); 
-
-      } catch (err) {
-        showToast("Gagal reset password: " + err.message, "error");
-      }
-    }, "Reset Password");
   }
 
   function bukaModalPassword() { document.getElementById('modalPassword').style.display = 'flex'; }
