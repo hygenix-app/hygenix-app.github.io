@@ -47,7 +47,6 @@
     .tab-pane.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* SEARCH & FILTER */
     .search-box { width: 100%; padding: 10px 15px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 13px; margin-bottom: 12px; background: white; }
     .filter-row { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 5px; }
     .filter-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid #cbd5e1; background: white; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
@@ -60,7 +59,9 @@
     .stat-label { font-size: 11px; color: var(--teks-muted); font-weight: 600; }
     .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-    .proker-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; }
+    /* PROKER CARD & DETAIL */
+    .proker-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; cursor: pointer; transition: 0.2s; }
+    .proker-card:active { transform: scale(0.98); }
     .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-right: 60px; }
     .progress-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
     .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s; }
@@ -73,8 +74,21 @@
     .badge-clickable { cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .badge-clickable:active { transform: scale(0.95); }
 
-    .aksi-container { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; }
+    .aksi-container { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; z-index: 2;}
     .btn-aksi-kecil { background: none; border: none; cursor: pointer; padding: 5px; }
+
+    /* MODAL DETAIL PROKER (CHECKLIST) */
+    .task-list { margin-top: 15px; margin-bottom: 15px; }
+    .task-item { display: flex; align-items: center; gap: 10px; background: white; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 8px; }
+    .task-checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #cbd5e1; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+    .task-checkbox.checked { background: var(--primary); border-color: var(--primary); }
+    .task-checkbox.checked::after { content: '✓'; color: white; font-size: 12px; font-weight: bold; }
+    .task-text { flex: 1; font-size: 13px; }
+    .task-text.done { text-decoration: line-through; color: var(--teks-muted); }
+    
+    .input-task-row { display: flex; gap: 8px; margin-top: 15px; }
+    .input-task-row input { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; }
+    .input-task-row button { padding: 0 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
     .saldo-card { background: linear-gradient(135deg, var(--primary) 0%, #059669 100%); color: white; padding: 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
     .saldo-label { font-size: 12px; opacity: 0.9; margin-bottom: 5px; }
@@ -251,12 +265,10 @@
     <div id="tab-profil" class="tab-pane">
       <div style="text-align: center; margin-top: 20px;">
         
-        <!-- AVATAR & UPLOAD -->
         <div style="position: relative; display: inline-block; margin-bottom: 15px;">
           <img id="profilAvatarImg" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background: var(--primary); display: none;">
           <div id="profilAvatarInitial" style="width: 100px; height: 100px; border-radius: 50%; background: var(--primary); color: white; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: bold;">?</div>
           
-          <!-- Tombol Kamera -->
           <button onclick="document.getElementById('inputAvatar').click()" style="position: absolute; bottom: 0; right: 0; background: white; border: 1px solid #cbd5e1; border-radius: 50%; width: 34px; height: 34px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
             <i data-lucide="camera" style="width: 18px; height: 18px; color: var(--primary);"></i>
           </button>
@@ -281,7 +293,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.2.0</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.3.0</p>
 
       </div>
     </div>
@@ -304,6 +316,33 @@
     <div class="nav-item" onclick="switchTab('profil', this)"><i data-lucide="user"></i> Profil</div>
   </nav>
 
+</div>
+
+<!-- MODAL DETAIL PROKER (CHECKLIST) -->
+<div id="modalDetailProker" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="detailProkerJudul">Memuat...</div>
+      <button class="btn-close" onclick="tutupDetailProker()"><i data-lucide="x"></i></button>
+    </div>
+    
+    <p style="font-size:12px; color:var(--teks-muted); margin-bottom:10px;" id="detailProkerDesk">...</p>
+    <div class="progress-container" style="height:12px;"><div class="progress-bar" id="detailProkerProgress" style="width: 0%;"></div></div>
+    <p style="font-size:11px; text-align:right; font-weight:bold; margin-bottom:15px;" id="detailProkerPercent">0%</p>
+
+    <h3 style="font-size:13px; font-weight:700; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:5px;">Daftar Tugas</h3>
+    
+    <div class="task-list" id="taskListContainer">
+      <p style="font-size:12px; text-align:center; color:#94a3b8;">Belum ada tugas.</p>
+    </div>
+
+    <div class="input-task-row">
+      <input type="text" id="inputNewTask" placeholder="Tambah tugas baru..." onkeypress="if(event.key==='Enter') tambahTugasProker()">
+      <button onclick="tambahTugasProker()"><i data-lucide="plus" style="width:18px; height:18px;"></i></button>
+    </div>
+    
+    <input type="hidden" id="detailProkerId" value="">
+  </div>
 </div>
 
 <!-- MODAL PROKER -->
@@ -416,6 +455,7 @@
   let radarChartInstance = null; 
   let confirmCallback = null;
   let filterKasTipe = 'all';
+  let globalProkers = []; // Untuk menyimpan data proker sementara
 
   function showToast(message, type = 'success') {
     const toast = document.getElementById('customToast');
@@ -476,7 +516,6 @@
       document.getElementById('profilEmail').innerText = profile.email;
       document.getElementById('profilRole').innerText = "Jabatan: " + (profile.role ? profile.role.toUpperCase() : "ANGGOTA");
       
-      // Setup Avatar
       const initial = (profile.full_name || "U").charAt(0).toUpperCase();
       const avatarImg = document.getElementById('profilAvatarImg');
       const avatarInitial = document.getElementById('profilAvatarInitial');
@@ -486,13 +525,11 @@
         avatarImg.src = profile.avatar_url;
         avatarImg.style.display = 'block';
         avatarInitial.style.display = 'none';
-        
         headerAvatar.innerHTML = `<img src="${profile.avatar_url}">`;
       } else {
         avatarImg.style.display = 'none';
         avatarInitial.style.display = 'flex';
         avatarInitial.innerText = initial;
-        
         headerAvatar.innerText = initial;
       }
 
@@ -527,7 +564,7 @@
     }
   }
 
-  // FUNGSI UPLOAD AVATAR BARU
+  // FUNGSI UPLOAD AVATAR
   async function uploadAvatar() {
     const fileInput = document.getElementById('inputAvatar');
     if(fileInput.files.length === 0) return;
@@ -538,19 +575,15 @@
     showToast("Mengunggah foto...", "info");
 
     try {
-      // Upload ke storage (gunakan bucket foto_aksi agar tidak perlu buat bucket baru)
       const { error: uploadError } = await supabaseClient.storage.from('foto_aksi').upload(fileName, file);
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabaseClient.storage.from('foto_aksi').getPublicUrl(fileName);
 
-      // Simpan URL ke tabel profiles
       const { error: dbError } = await supabaseClient.from('profiles').update({ avatar_url: publicUrl }).eq('id', currentUserId);
       if (dbError) throw dbError;
 
       showToast("Foto profil berhasil diperbarui!");
-      
-      // Refresh halaman otomatis
       setTimeout(() => { window.location.reload(); }, 1500);
 
     } catch (err) {
@@ -560,11 +593,16 @@
     }
   }
 
-  // 2. FUNGSI PROKER
+  // 2. FUNGSI PROKER & CHECKLIST TUGAS
   async function loadDataProker() {
     const search = document.getElementById('searchProker').value.toLowerCase();
-    const { data: prokers } = await supabaseClient.from('program_kerja').select('*').order('created_at', { ascending: false });
     
+    // Ambil data proker BESERTA jumlah tugas yang selesai
+    const { data: prokers } = await supabaseClient.from('program_kerja').select('*').order('created_at', { ascending: false });
+    const { data: allTasks } = await supabaseClient.from('tugas_proker').select('*');
+    
+    globalProkers = prokers || []; // Simpan ke variabel global
+
     const listProker = document.getElementById('prokerList');
     const dashProker = document.getElementById('dashProkerList');
     const dashTotal = document.getElementById('dashTotalProker');
@@ -576,6 +614,7 @@
 
     if (prokers && prokers.length > 0) {
       dashTotal.innerText = prokers.length;
+      
       const filteredProkers = prokers.filter(p => p.judul.toLowerCase().includes(search));
 
       if (filteredProkers.length === 0) {
@@ -583,12 +622,18 @@
       }
 
       filteredProkers.forEach((p, index) => {
+        // Hitung persentase tugas
+        const tasksProker = allTasks ? allTasks.filter(t => t.proker_id === p.id) : [];
+        const totalTugas = tasksProker.length;
+        const tugasSelesai = tasksProker.filter(t => t.is_selesai).length;
+        let percent = totalTugas > 0 ? Math.round((tugasSelesai / totalTugas) * 100) : 0;
+
         let badgeClass = 'badge-pending';
         if(p.status === 'Berjalan') badgeClass = 'badge-proses';
         if(p.status === 'Selesai') badgeClass = 'badge-valid';
 
         const canChangeStatus = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris' || currentUserRole === 'guru');
-        const onclickStatus = canChangeStatus ? `onclick="ubahStatusProker('${p.id}', '${p.status}')"` : '';
+        const onclickStatus = canChangeStatus ? `onclick="event.stopPropagation(); ubahStatusProker('${p.id}', '${p.status}')"` : '';
         const cursorStyle = canChangeStatus ? 'badge-clickable' : '';
         const iconRefresh = canChangeStatus ? `<i data-lucide="refresh-cw" style="width:10px; display:inline;"></i>` : '';
 
@@ -596,25 +641,27 @@
         if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris') {
            actionBtns = `
             <div class="aksi-container">
-              <button class="btn-aksi-kecil" onclick="bukaModalEditProker('${p.id}')" style="color:var(--biru);" title="Edit"><i data-lucide="edit" style="width:16px;"></i></button>
-              <button class="btn-aksi-kecil" onclick="hapusProker('${p.id}')" style="color:var(--merah);" title="Hapus"><i data-lucide="trash-2" style="width:16px;"></i></button>
+              <button class="btn-aksi-kecil" onclick="event.stopPropagation(); bukaModalEditProker('${p.id}')" style="color:var(--biru);" title="Edit"><i data-lucide="edit" style="width:16px;"></i></button>
+              <button class="btn-aksi-kecil" onclick="event.stopPropagation(); hapusProker('${p.id}')" style="color:var(--merah);" title="Hapus"><i data-lucide="trash-2" style="width:16px;"></i></button>
             </div>
            `;
         }
 
+        // KARTU PROKER (Bisa diklik untuk buka detail)
         listProker.innerHTML += `
-          <div class="proker-card">
+          <div class="proker-card" onclick="bukaDetailProker('${p.id}')">
             ${actionBtns}
             <div class="proker-title">${p.judul}</div>
             <p style="font-size:11px; color:var(--teks-muted); margin-bottom:10px;">${p.deskripsi || '-'}</p>
+            <div class="progress-container"><div class="progress-bar" style="width: ${percent}%;"></div></div>
             <div class="proker-meta">
               <span class="badge ${badgeClass} ${cursorStyle}" ${onclickStatus}>${p.status} ${iconRefresh}</span>
-              <span>Target: ${p.target_selesai || '-'}</span>
+              <span>${percent}% Selesai</span>
             </div>
           </div>
         `;
 
-        if(index < 3) dashProker.innerHTML += `<div class="proker-card"><div class="proker-title">${p.judul}</div><div class="progress-container"><div class="progress-bar" style="width: ${p.status === 'Selesai' ? '100' : (p.status === 'Berjalan' ? '50' : '10')}%;"></div></div><div class="proker-meta"><span>${p.status}</span> <span>${p.status === 'Selesai' ? '100' : (p.status === 'Berjalan' ? '50' : '10')}%</span></div></div>`;
+        if(index < 3) dashProker.innerHTML += `<div class="proker-card"><div class="proker-title">${p.judul}</div><div class="progress-container"><div class="progress-bar" style="width: ${percent}%;"></div></div><div class="proker-meta"><span>${p.status}</span> <span>${percent}%</span></div></div>`;
         
         dropdownProker.innerHTML += `<option value="${p.id}">${p.judul}</option>`;
       });
@@ -626,6 +673,119 @@
     lucide.createIcons();
   }
 
+  // FITUR DETAIL PROKER (CHECKLIST)
+  let currentProkerIdForTasks = null;
+
+  function bukaDetailProker(id) {
+    currentProkerIdForTasks = id;
+    const proker = globalProkers.find(p => p.id === id);
+    if(!proker) return;
+
+    document.getElementById('detailProkerId').value = id;
+    document.getElementById('detailProkerJudul').innerText = proker.judul;
+    document.getElementById('detailProkerDesk').innerText = proker.deskripsi || "Tidak ada deskripsi.";
+    
+    // Tampilkan Modal
+    document.getElementById('modalDetailProker').style.display = 'flex';
+    
+    // Load Tugas
+    loadTugasProker(id);
+  }
+
+  function tutupDetailProker() {
+    document.getElementById('modalDetailProker').style.display = 'none';
+    document.getElementById('inputNewTask').value = '';
+    currentProkerIdForTasks = null;
+    loadDataProker(); // Refresh list belakang untuk update progress bar
+  }
+
+  async function loadTugasProker(prokerId) {
+    const container = document.getElementById('taskListContainer');
+    container.innerHTML = '<p style="font-size:12px; text-align:center; color:#94a3b8;">Memuat tugas...</p>';
+
+    const { data: tasks, error } = await supabaseClient.from('tugas_proker').select('*').eq('proker_id', prokerId).order('created_at', { ascending: true });
+
+    if (error) {
+      container.innerHTML = '<p style="font-size:12px; text-align:center; color:#ef4444;">Gagal memuat tugas.</p>';
+      return;
+    }
+
+    if (tasks && tasks.length > 0) {
+      container.innerHTML = '';
+      
+      let selesaiCount = 0;
+      tasks.forEach(t => {
+        if(t.is_selesai) selesaiCount++;
+        
+        const isChecked = t.is_selesai ? 'checked' : '';
+        const isDone = t.is_selesai ? 'done' : '';
+        
+        // Boleh hapus tugas hanya jika Admin/Ketua/Sekretaris
+        const canDeleteTask = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris');
+        const btnHapusTask = canDeleteTask ? `<button onclick="hapusTugas('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer;"><i data-lucide="x" style="width:16px;"></i></button>` : '';
+
+        container.innerHTML += `
+          <div class="task-item">
+            <div class="task-checkbox ${isChecked}" onclick="toggleTugas('${t.id}', ${t.is_selesai})"></div>
+            <div class="task-text ${isDone}">${t.nama_tugas}</div>
+            ${btnHapusTask}
+          </div>
+        `;
+      });
+
+      // Update Progress Bar di Modal
+      const percent = Math.round((selesaiCount / tasks.length) * 100);
+      document.getElementById('detailProkerProgress').style.width = percent + '%';
+      document.getElementById('detailProkerPercent').innerText = percent + '%';
+      
+    } else {
+      container.innerHTML = '<p style="font-size:12px; text-align:center; color:#94a3b8;">Belum ada tugas. Tambahkan tugas pertama!</p>';
+      document.getElementById('detailProkerProgress').style.width = '0%';
+      document.getElementById('detailProkerPercent').innerText = '0%';
+    }
+    lucide.createIcons();
+  }
+
+  async function tambahTugasProker() {
+    const input = document.getElementById('inputNewTask');
+    const namaTugas = input.value.trim();
+    const prokerId = document.getElementById('detailProkerId').value;
+
+    if(!namaTugas) return;
+
+    const { error } = await supabaseClient.from('tugas_proker').insert([{
+      proker_id: prokerId,
+      nama_tugas: namaTugas,
+      is_selesai: false
+    }]);
+
+    if(error) {
+      showToast("Gagal tambah tugas: " + error.message, "error");
+    } else {
+      input.value = '';
+      loadTugasProker(prokerId);
+    }
+  }
+
+  async function toggleTugas(id, currentStatus) {
+    const newStatus = !currentStatus;
+    const prokerId = document.getElementById('detailProkerId').value;
+    
+    const { error } = await supabaseClient.from('tugas_proker').update({ is_selesai: newStatus }).eq('id', id);
+    if(error) showToast("Gagal update tugas: " + error.message, "error");
+    else loadTugasProker(prokerId);
+  }
+
+  function hapusTugas(id) {
+    showConfirm("Hapus tugas ini?", async () => {
+      const prokerId = document.getElementById('detailProkerId').value;
+      const { error } = await supabaseClient.from('tugas_proker').delete().eq('id', id);
+      if(error) showToast("Gagal hapus: " + error.message, "error");
+      else loadTugasProker(prokerId);
+    }, "Hapus Tugas");
+  }
+
+  // FUNGSI PROKER LAINNYA
   function bukaModalProker() { 
     document.getElementById('titleModalProker').innerText = "Tambah Proker Baru";
     document.getElementById('editProkerId').value = "";
@@ -636,16 +796,15 @@
   }
 
   function bukaModalEditProker(id) {
-    supabaseClient.from('program_kerja').select('*').eq('id', id).single().then(({data}) => {
-      if(data) {
-        document.getElementById('titleModalProker').innerText = "Edit Proker";
-        document.getElementById('editProkerId').value = data.id;
-        document.getElementById('prokerJudul').value = data.judul;
-        document.getElementById('prokerDesk').value = data.deskripsi || "";
-        document.getElementById('prokerTanggal').value = data.target_selesai || "";
-        document.getElementById('modalProker').style.display = 'flex'; 
-      }
-    });
+    const data = globalProkers.find(p => p.id === id);
+    if(data) {
+      document.getElementById('titleModalProker').innerText = "Edit Proker";
+      document.getElementById('editProkerId').value = data.id;
+      document.getElementById('prokerJudul').value = data.judul;
+      document.getElementById('prokerDesk').value = data.deskripsi || "";
+      document.getElementById('prokerTanggal').value = data.target_selesai || "";
+      document.getElementById('modalProker').style.display = 'flex'; 
+    }
   }
 
   function tutupModalProker() { document.getElementById('modalProker').style.display = 'none'; }
@@ -694,7 +853,7 @@
   }
 
   function hapusProker(id) {
-    showConfirm("Yakin ingin menghapus proker ini? Data laporan aksi terkait juga akan terhapus.", async () => {
+    showConfirm("Yakin ingin menghapus proker ini? Semua tugas dan laporan terkait juga akan terhapus.", async () => {
       const { error } = await supabaseClient.from('program_kerja').delete().eq('id', id);
       if(error) showToast("Gagal menghapus: " + error.message, "error");
       else { loadDataProker(); showToast("Proker dihapus."); }
@@ -820,7 +979,6 @@
   // 4. FUNGSI AKSI NYATA
   async function loadFeedAksi() {
     const search = document.getElementById('searchAksi').value.toLowerCase();
-    // Tambahkan avatar_url di select profiles
     const { data: feeds, error } = await supabaseClient
       .from('laporan_aksi')
       .select(`*, profiles:user_id (full_name, avatar_url), program_kerja:proker_id (judul)`)
@@ -857,10 +1015,7 @@
         const canDelete = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || f.user_id === currentUserId);
         const btnHapus = canDelete ? `<button onclick="hapusLaporan('${f.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; position:absolute; top:12px; right:12px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` : '';
 
-        // Logika Avatar HTML
-        const avatarHTML = avatarPelapor 
-          ? `<img src="${avatarPelapor}">` 
-          : `${namaPelapor.charAt(0)}`;
+        const avatarHTML = avatarPelapor ? `<img src="${avatarPelapor}">` : `${namaPelapor.charAt(0)}`;
 
         list.innerHTML += `
           <div class="feed-card">
@@ -1013,7 +1168,7 @@
     btn.innerText = "Simpan Penilaian"; btn.disabled = false;
   }
 
-  // 6. FUNGSI ADMIN PANEL (Dengan Avatar)
+  // 6. FUNGSI ADMIN PANEL
   async function loadAllUsers() {
     const { data: users } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
     const listContainer = document.getElementById('userList'); listContainer.innerHTML = '';
@@ -1195,7 +1350,7 @@
           installingWorker.onstatechange = function() {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
-                alert('Aplikasi telah diperbarui ke Versi 1.2.0! Halaman akan dimuat ulang.');
+                alert('Aplikasi telah diperbarui ke Versi 1.3.0! Halaman akan dimuat ulang.');
                 window.location.reload();
               }
             }
