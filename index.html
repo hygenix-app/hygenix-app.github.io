@@ -161,7 +161,6 @@
     .btn-status.aktif { background: var(--primary); }
     .btn-status.nonaktif { background: var(--merah); }
 
-    /* CSS TOMBOL RESET PASSWORD YANG HILANG */
     .btn-reset { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; min-width: 70px; text-align: center; transition: 0.2s; }
     .btn-reset:hover { background: #e2e8f0; }
 
@@ -344,7 +343,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.0.0</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.5.3 (RBAC Fix)</p>
 
       </div>
     </div>
@@ -592,7 +591,10 @@
   let isProkerCompletedLocked = false;
   let currentEvaluationData = null;
 
-  const rolesCanManageTasks = ['admin', 'mahasiswa', 'ketua', 'sekretaris', 'bendahara'];
+  // PENGATURAN HAK AKSES ROLE
+  const rolesCanManageTasks = ['admin', 'ketua', 'sekretaris'];
+  const rolesCanManageFinance = ['admin', 'bendahara'];
+  const rolesCanEvaluate = ['admin', 'mahasiswa', 'guru'];
 
   function showToast(message, type = 'success') {
     const toast = document.getElementById('customToast');
@@ -701,15 +703,24 @@
         document.getElementById('msgPassChanged').style.display = 'none';
       }
 
-      if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa') {
+      // ==========================================
+      // PENGATURAN VISIBILITAS MENU BERDASARKAN ROLE
+      // ==========================================
+
+      // 1. Menu Admin (HANYA ADMIN)
+      if (currentUserRole === 'admin') {
         document.getElementById('navAdmin').style.display = 'flex';
         loadAllUsers();
       }
-      if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'bendahara') {
+
+      // 2. Menu Keuangan (Admin, Bendahara, Mahasiswa - View Only)
+      if (['admin', 'bendahara', 'mahasiswa'].includes(currentUserRole)) {
         document.getElementById('navKeuangan').style.display = 'flex';
         loadDataKeuangan();
       }
-      if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'guru') {
+
+      // 3. Tombol Evaluasi (Admin, Mahasiswa, Guru)
+      if (rolesCanEvaluate.includes(currentUserRole)) {
         document.getElementById('btnBeriNilai').style.display = 'flex';
         document.getElementById('btnCetakLaporan').style.display = 'block';
       }
@@ -794,7 +805,8 @@
         }
 
         let actionBtns = '';
-        if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris') {
+        // HANYA ADMIN, KETUA, SEKRETARIS YANG BISA EDIT/HAPUS PROKER
+        if (rolesCanManageTasks.includes(currentUserRole)) {
            actionBtns = `
             <div class="aksi-container">
               <button class="btn-aksi-kecil" onclick="event.stopPropagation(); bukaModalEditProker('${p.id}')" style="color:var(--biru);" title="Edit"><i data-lucide="edit" style="width:16px;"></i></button>
@@ -972,8 +984,8 @@
   }
 
   function hapusTugas(id) {
-    if (isProkerCompletedLocked && !rolesCanManageTasks.includes(currentUserRole)) {
-       showToast("Proker sudah selesai. Anda tidak bisa menghapus tugas.", "warning");
+    if (!rolesCanManageTasks.includes(currentUserRole)) {
+       showToast("Anda tidak memiliki akses untuk menghapus tugas.", "warning");
        return;
     }
 
@@ -1075,7 +1087,8 @@
         const isMasuk = t.tipe === 'Pemasukan';
 
         let actionBtns = '';
-        if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'bendahara') {
+        // HANYA ADMIN DAN BENDAHARA YANG BISA EDIT/HAPUS KAS
+        if (rolesCanManageFinance.includes(currentUserRole)) {
           actionBtns = `
             <button onclick="bukaModalEditKeuangan('${t.id}')" style="background:none; border:none; color:var(--biru); cursor:pointer; margin-left:5px;"><i data-lucide="edit" style="width:16px;"></i></button>
             <button onclick="hapusTransaksi('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; margin-left:5px;"><i data-lucide="trash-2" style="width:16px;"></i></button>
@@ -1161,6 +1174,11 @@
   }
 
   function hapusTransaksi(id) {
+    if (!rolesCanManageFinance.includes(currentUserRole)) {
+       showToast("Anda tidak memiliki akses menghapus kas.", "warning");
+       return;
+    }
+
     showConfirm("Yakin ingin menghapus catatan transaksi ini?", async () => {
       const { data, error } = await supabaseClient.from('keuangan').delete().eq('id', id).select();
       
@@ -1240,10 +1258,12 @@
           day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'
         }) : '-';
 
-        const canValidate = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'guru') && isMenunggu;
+        // ADMIN, MAHASISWA, GURU BISA VALIDASI
+        const canValidate = rolesCanEvaluate.includes(currentUserRole) && isMenunggu;
         const btnValidasi = canValidate ? `<button class="btn-validasi" onclick="validasiLaporan('${f.id}')">Validasi Laporan</button>` : '';
         
-        const canDelete = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || f.user_id === currentUserId);
+        // HANYA ADMIN ATAU PEMILIK LAPORAN YANG BISA HAPUS
+        const canDelete = (currentUserRole === 'admin' || f.user_id === currentUserId);
         const btnHapus = canDelete ? `<button onclick="hapusLaporan('${f.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; position:absolute; top:12px; right:12px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` : '';
 
         const avatarHTML = avatarPelapor ? `<img src="${avatarPelapor}">` : `${namaPelapor.charAt(0)}`;
@@ -1665,7 +1685,6 @@
         const userItemClass = isActive ? '' : 'inactive';
         const disableBtn = (u.id === currentUserId) ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : '';
 
-        // KEMBALIKAN TOMBOL RESET PASSWORD
         let btnReset = '';
         if (u.has_changed_password) {
             btnReset = `<button class="btn-reset" onclick="resetPassword('${u.id}')">Reset Pass</button>`;
@@ -1717,7 +1736,6 @@
     }, currentStatus ? "Nonaktifkan Akun" : "Aktifkan Akun");
   }
 
-  // FUNGSI RESET PASSWORD YANG SEMPAT HILANG
   function resetPassword(userId) {
     showConfirm("Yakin ingin mereset password user ini menjadi (hygenix2026)?", async () => {
       try {
