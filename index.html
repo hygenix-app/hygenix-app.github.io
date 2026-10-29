@@ -59,8 +59,8 @@
     .stat-label { font-size: 11px; color: var(--teks-muted); font-weight: 600; }
     .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-    /* PROKER CARD (Animasi Klik Dihilangkan) */
     .proker-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; cursor: pointer; transition: 0.2s; }
+    .proker-card:active { transform: scale(0.98); }
     .proker-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-right: 60px; }
     .progress-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
     .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s; }
@@ -78,11 +78,12 @@
 
     .aksi-container { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; z-index: 2;}
     .btn-aksi-kecil { background: none; border: none; cursor: pointer; padding: 5px; transition: 0.1s; }
-    .btn-aksi-kecil:active { transform: scale(0.85); } /* Efek tekan hanya di tombol */
+    .btn-aksi-kecil:active { transform: scale(0.85); } 
 
     .task-list { margin-top: 15px; margin-bottom: 15px; }
     .task-item { display: flex; align-items: center; gap: 10px; background: white; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 8px; }
     .task-checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid #cbd5e1; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+    .task-checkbox.disabled { background: #e2e8f0; border-color: #cbd5e1; cursor: not-allowed; }
     .task-checkbox.checked { background: var(--primary); border-color: var(--primary); }
     .task-checkbox.checked::after { content: '✓'; color: white; font-size: 12px; font-weight: bold; }
     .task-text { flex: 1; font-size: 13px; }
@@ -111,6 +112,7 @@
     .feed-info { flex: 1; }
     .feed-name { font-size: 13px; font-weight: 700; }
     .feed-proker { font-size: 10px; color: var(--teks-muted); }
+    .feed-time { font-size: 9px; color: #94a3b8; margin-top: 2px; } /* Style Tanggal Feed Baru */
     .feed-img { width: 100%; height: 200px; object-fit: cover; background: #e2e8f0; display: block; }
     .feed-body { padding: 12px; }
     .feed-desc { font-size: 12px; line-height: 1.5; margin-bottom: 10px; }
@@ -302,7 +304,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.2 (Auto Status)</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.4.3 (Fix Feed)</p>
 
       </div>
     </div>
@@ -374,6 +376,7 @@
       <button class="btn-close" onclick="tutupDetailProker()"><i data-lucide="x"></i></button>
     </div>
     
+    <div id="detailProkerWarning"></div>
     <p style="font-size:12px; color:var(--teks-muted); margin-bottom:10px;" id="detailProkerDesk">...</p>
     <div class="progress-container" style="height:12px;"><div class="progress-bar" id="detailProkerProgress" style="width: 0%;"></div></div>
     <p style="font-size:11px; text-align:right; font-weight:bold; margin-bottom:15px;" id="detailProkerPercent">0%</p>
@@ -659,7 +662,7 @@
     }
   }
 
-  // 2. FUNGSI PROKER (Status Otomatis)
+  // 2. FUNGSI PROKER (Status Otomatis & Masa Depan)
   async function loadDataProker() {
     const search = document.getElementById('searchProker').value.toLowerCase();
     const { data: prokers } = await supabaseClient.from('program_kerja').select('*').order('created_at', { ascending: false });
@@ -690,7 +693,6 @@
         const tugasSelesai = tasksProker.filter(t => t.is_selesai).length;
         let percent = totalTugas > 0 ? Math.round((tugasSelesai / totalTugas) * 100) : 0;
 
-        // --- LOGIKA OPSI A: STATUS OTOMATIS ---
         let statusText = 'Rencana';
         let badgeClass = 'badge-pending';
 
@@ -701,7 +703,6 @@
             statusText = 'Selesai';
             badgeClass = 'badge-valid';
         }
-        // --------------------------------------
 
         let actionBtns = '';
         if (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'ketua' || currentUserRole === 'sekretaris') {
@@ -747,6 +748,7 @@
 
   // FITUR DETAIL PROKER (CHECKLIST)
   let currentProkerIdForTasks = null;
+  let isCurrentProkerFuture = false; // Variabel untuk cek apakah proker masa depan
 
   function bukaDetailProker(id) {
     currentProkerIdForTasks = id;
@@ -755,10 +757,28 @@
 
     document.getElementById('detailProkerId').value = id;
     document.getElementById('detailProkerJudul').innerText = proker.judul;
-    document.getElementById('detailProkerDesk').innerText = proker.deskripsi || "Tidak ada deskripsi.";
+    
+    // Logika Pengecekan Tanggal Mulai
+    const todayStr = new Date().toISOString().split('T')[0];
+    isCurrentProkerFuture = proker.tanggal_mulai && (proker.tanggal_mulai > todayStr);
+    
+    const warningDiv = document.getElementById('detailProkerWarning');
+    if (isCurrentProkerFuture) {
+      warningDiv.innerHTML = `
+        <div style="background: #fffbeb; border: 1px solid #fde047; color: #854d0e; padding: 10px; border-radius: 8px; font-size: 12px; margin-bottom: 15px; text-align: center;">
+          <b>⏳ Belum Dimulai</b><br>Proker ini baru akan dimulai pada tanggal <b>${proker.tanggal_mulai}</b>.
+        </div>
+      `;
+      document.getElementById('detailProkerDesk').style.display = 'none';
+    } else {
+      warningDiv.innerHTML = '';
+      document.getElementById('detailProkerDesk').style.display = 'block';
+      document.getElementById('detailProkerDesk').innerText = proker.deskripsi || "Tidak ada deskripsi.";
+    }
     
     const canManage = rolesCanManageTasks.includes(currentUserRole);
-    document.getElementById('inputTaskContainer').style.display = canManage ? 'flex' : 'none';
+    // Sembunyikan input tambah tugas jika proker belum dimulai
+    document.getElementById('inputTaskContainer').style.display = (canManage && !isCurrentProkerFuture) ? 'flex' : 'none';
 
     document.getElementById('modalDetailProker').style.display = 'flex';
     
@@ -769,7 +789,7 @@
     document.getElementById('modalDetailProker').style.display = 'none';
     document.getElementById('inputNewTask').value = '';
     currentProkerIdForTasks = null;
-    loadDataProker(); // Refresh list agar status otomatis berubah jika ada yg di-centang
+    loadDataProker(); 
   }
 
   async function loadTugasProker(prokerId) {
@@ -792,13 +812,15 @@
         
         const isChecked = t.is_selesai ? 'checked' : '';
         const isDone = t.is_selesai ? 'done' : '';
+        // Cek jika proker belum dimulai, checkbox dibuat disabled
+        const disabledClass = isCurrentProkerFuture ? 'disabled' : '';
         
-        const canDeleteTask = rolesCanManageTasks.includes(currentUserRole);
+        const canDeleteTask = rolesCanManageTasks.includes(currentUserRole) && !isCurrentProkerFuture;
         const btnHapusTask = canDeleteTask ? `<button onclick="hapusTugas('${t.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer;"><i data-lucide="x" style="width:16px;"></i></button>` : '';
 
         container.innerHTML += `
           <div class="task-item">
-            <div class="task-checkbox ${isChecked}" onclick="toggleTugas('${t.id}', ${t.is_selesai})"></div>
+            <div class="task-checkbox ${isChecked} ${disabledClass}" onclick="toggleTugas('${t.id}', ${t.is_selesai})"></div>
             <div class="task-text ${isDone}">${t.nama_tugas}</div>
             ${btnHapusTask}
           </div>
@@ -837,6 +859,12 @@
   }
 
   async function toggleTugas(id, currentStatus) {
+    // Pengecekan Keamanan Ekstra: Jangan biarkan centang jika proker belum mulai
+    if (isCurrentProkerFuture) {
+       showToast("Tugas tidak bisa dicentang karena proker belum dimulai.", "warning");
+       return;
+    }
+
     const newStatus = !currentStatus;
     const prokerId = document.getElementById('detailProkerId').value;
     const { error } = await supabaseClient.from('tugas_proker').update({ is_selesai: newStatus }).eq('id', id);
@@ -899,7 +927,6 @@
       }).eq('id', id);
       error = res.error;
     } else {
-      // Status default di database adalah 'Rencana', tapi UI kita mengabaikannya dan menghitung otomatis
       const res = await supabaseClient.from('program_kerja').insert([{
         judul: judul, deskripsi: deskripsi, tipe_proker: tipe, tanggal_mulai: mulai, target_selesai: target || null, status: 'Rencana', created_by: currentUserId
       }]);
@@ -913,8 +940,6 @@
     }
     btn.innerText = "Simpan Proker"; btn.disabled = false;
   }
-
-  // Fungsi ubahStatusProker DIHAPUS karena status sudah otomatis.
 
   function hapusProker(id) {
     showConfirm("Yakin ingin menghapus proker ini? Semua tugas dan laporan terkait juga akan terhapus.", async () => {
@@ -1040,7 +1065,7 @@
     }, "Hapus Transaksi");
   }
 
-  // 4. FUNGSI AKSI NYATA
+  // 4. FUNGSI AKSI NYATA (PERBAIKAN ERROR & TANGGAL)
   async function loadFeedAksi() {
     const search = document.getElementById('searchAksi').value.toLowerCase();
     const { data: feeds, error } = await supabaseClient
@@ -1052,14 +1077,20 @@
     const dashTotalAksi = document.getElementById('dashTotalAksi');
     list.innerHTML = '';
 
-    if (error) { list.innerHTML = '<p style="font-size:12px; text-align:center; color:#ef4444;">Gagal memuat feed.</p>'; return; }
+    if (error) { 
+        console.error(error); // Tampilkan error di console untuk debug
+        list.innerHTML = '<p style="font-size:12px; text-align:center; color:#ef4444;">Gagal memuat feed: ' + error.message + '</p>'; 
+        return; 
+    }
 
     if (feeds && feeds.length > 0) {
       dashTotalAksi.innerText = feeds.length;
       
+      // PENGAMAN: Cek null values sebelum .toLowerCase()
       let filteredFeeds = feeds.filter(f => {
-        const nama = f.profiles ? f.profiles.full_name : 'Anonim';
-        return f.deskripsi.toLowerCase().includes(search) || nama.toLowerCase().includes(search);
+        const nama = (f.profiles && f.profiles.full_name) ? f.profiles.full_name : 'Anonim';
+        const deskripsi = f.deskripsi || '';
+        return deskripsi.toLowerCase().includes(search) || nama.toLowerCase().includes(search);
       });
 
       if(filteredFeeds.length === 0) {
@@ -1067,12 +1098,17 @@
       }
 
       filteredFeeds.forEach(f => {
-        const namaPelapor = f.profiles ? f.profiles.full_name : 'Anonim (User Dihapus)';
-        const avatarPelapor = f.profiles && f.profiles.avatar_url ? f.profiles.avatar_url : null;
-        const judulProker = f.program_kerja ? f.program_kerja.judul : 'Proker Dihapus';
+        const namaPelapor = (f.profiles && f.profiles.full_name) ? f.profiles.full_name : 'Anonim';
+        const avatarPelapor = (f.profiles && f.profiles.avatar_url) ? f.profiles.avatar_url : null;
+        const judulProker = (f.program_kerja && f.program_kerja.judul) ? f.program_kerja.judul : 'Proker Dihapus';
         const isMenunggu = f.status_validasi === 'Menunggu';
         const badgeColor = isMenunggu ? 'badge-pending' : 'badge-valid';
         
+        // FORMAT TANGGAL FEED
+        const tglLapor = f.created_at ? new Date(f.created_at).toLocaleString('id-ID', {
+          day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'
+        }) : '-';
+
         const canValidate = (currentUserRole === 'admin' || currentUserRole === 'mahasiswa' || currentUserRole === 'guru') && isMenunggu;
         const btnValidasi = canValidate ? `<button class="btn-validasi" onclick="validasiLaporan('${f.id}')">Validasi Laporan</button>` : '';
         
@@ -1089,11 +1125,12 @@
               <div class="feed-info">
                 <div class="feed-name">${namaPelapor}</div>
                 <div class="feed-proker">Proker: ${judulProker}</div>
+                <div class="feed-time">${tglLapor}</div> <!-- TANGGAL DITAMBAHKAN -->
               </div>
             </div>
             <img src="${f.foto_url}" class="feed-img" onerror="this.src='https://via.placeholder.com/400x200?text=Foto+Gagal+Dimuat'">
             <div class="feed-body">
-              <div class="feed-desc">${f.deskripsi}</div>
+              <div class="feed-desc">${f.deskripsi || ''}</div>
               <div class="feed-footer">
                 <div class="badge ${badgeColor}">${f.status_validasi}</div>
                 ${btnValidasi}
@@ -1571,7 +1608,7 @@
           installingWorker.onstatechange = function() {
             if (installingWorker.state === 'installed') {
               if (navigator.serviceWorker.controller) {
-                alert('Aplikasi telah diperbarui ke Versi 1.4.2! Halaman akan dimuat ulang.');
+                alert('Aplikasi telah diperbarui ke Versi 1.4.3! Halaman akan dimuat ulang.');
                 window.location.reload();
               }
             }
