@@ -155,7 +155,73 @@
     .user-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
     .user-name { font-size: 13px; font-weight: 700; }
     .user-email { font-size: 11px; color: var(--teks-muted); }
-    .user-role-select { padding: 6px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 11px; font-family: inherit; font-weight: bold; background: #f8fafc; }
+
+    /* === CUSTOM SELECT (v1.5.4) === */
+    .custom-input-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--teks);
+      margin-bottom: 10px;
+      transition: 0.2s;
+    }
+    .custom-input-select:active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+    .custom-input-select span { flex: 1; text-align: left; }
+
+    .custom-select-option {
+      padding: 14px 15px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .custom-select-option:active {
+      transform: scale(0.98);
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+    .custom-select-option.selected {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .user-role-badge {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 11px;
+      font-weight: bold;
+      background: #f8fafc;
+      cursor: pointer;
+      text-align: center;
+      min-width: 90px;
+      transition: 0.2s;
+    }
+    .user-role-badge:active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
     
     .btn-status { padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; border: none; color: white; min-width: 70px; text-align: center; }
     .btn-status.aktif { background: var(--primary); }
@@ -343,7 +409,7 @@
           <i data-lucide="log-out" style="width: 18px;"></i> Keluar Akun
         </button>
 
-        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.0.0</p>
+        <p style="margin-top: 30px; font-size: 11px; color: #94a3b8;">Versi Aplikasi: 1.1.0</p>
 
       </div>
     </div>
@@ -378,12 +444,11 @@
     
     <div class="admin-form" style="padding:0; border:none; margin-bottom:15px;">
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Pilih Periode Laporan</label>
-      <select id="periodeLaporan" onchange="aturTanggalLaporan()">
-        <option value="minggu">Laporan Minggu Ini</option>
-        <option value="bulan">Laporan Bulan Ini</option>
-        <option value="semua">Semua Data (Keseluruhan)</option>
-        <option value="kustom">Pilih Tanggal Sendiri (Kustom)</option>
-      </select>
+      <div class="custom-input-select" onclick="bukaPilihPeriode()">
+        <span id="periodeLaporanLabel">Laporan Minggu Ini</span>
+        <i data-lucide="chevron-down" style="width:18px; height:18px; color:var(--teks-muted);"></i>
+      </div>
+      <input type="hidden" id="periodeLaporan" value="minggu">
 
       <div style="display: flex; gap: 10px; margin-top: 10px;">
         <div style="flex: 1;">
@@ -450,11 +515,11 @@
       <textarea id="prokerDesk" placeholder="Deskripsi Singkat..." rows="2"></textarea>
       
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Tipe Program Kerja</label>
-      <select id="prokerTipe" style="width:100%; padding:10px; margin-bottom:10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 13px;">
-        <option value="Mingguan">Mingguan</option>
-        <option value="Bulanan">Bulanan</option>
-        <option value="Insidental" selected>Insidental (Sekali Jalan)</option>
-      </select>
+      <div class="custom-input-select" onclick="bukaPilihTipeProker()">
+        <span id="prokerTipeLabel">Insidental (Sekali Jalan)</span>
+        <i data-lucide="chevron-down" style="width:18px; height:18px; color:var(--teks-muted);"></i>
+      </div>
+      <input type="hidden" id="prokerTipe" value="Insidental">
 
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Tanggal Mulai</label>
       <input type="date" id="prokerMulai">
@@ -473,7 +538,14 @@
     <div class="modal-header"><div class="modal-title" id="titleModalKeuangan">Catat Transaksi</div><button class="btn-close" onclick="tutupModalKeuangan()"><i data-lucide="x"></i></button></div>
     <div class="admin-form" style="border:none; padding:0;">
       <input type="hidden" id="editTrxId" value="">
-      <select id="trxTipe"><option value="Pemasukan">Pemasukan (Masuk)</option><option value="Pengeluaran">Pengeluaran (Keluar)</option></select>
+      
+      <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Tipe Transaksi</label>
+      <div class="custom-input-select" onclick="bukaPilihTipeTrx()">
+        <span id="trxTipeLabel">Pemasukan (Masuk)</span>
+        <i data-lucide="chevron-down" style="width:18px; height:18px; color:var(--teks-muted);"></i>
+      </div>
+      <input type="hidden" id="trxTipe" value="Pemasukan">
+      
       <input type="number" id="trxJumlah" placeholder="Jumlah (Cth: 50000)">
       <input type="text" id="trxKet" placeholder="Keterangan (Cth: Iuran Kelas 7A)">
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Tanggal</label>
@@ -488,7 +560,12 @@
     <div class="modal-header"><div class="modal-title">Lapor Aksi Nyata</div><button class="btn-close" onclick="tutupModalAksi()"><i data-lucide="x"></i></button></div>
     <div class="admin-form" style="border:none; padding:0;">
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Pilih Program Kerja</label>
-      <select id="aksiProker"></select>
+      <div class="custom-input-select" onclick="bukaPilihProkerAksi()">
+        <span id="aksiProkerLabel">-- Pilih Proker --</span>
+        <i data-lucide="chevron-down" style="width:18px; height:18px; color:var(--teks-muted);"></i>
+      </div>
+      <input type="hidden" id="aksiProker" value="">
+
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Foto Bukti Kegiatan</label>
       <input type="file" id="aksiFoto" accept="image/*" style="padding:8px; background:#f8fafc;">
       <label style="font-size:12px; font-weight:600; margin-bottom:5px; display:block;">Deskripsi Kegiatan</label>
@@ -554,6 +631,17 @@
   </div>
 </div>
 
+<!-- MODAL CUSTOM SELECT (PENGGANTI <select> NATIVE) -->
+<div id="customSelectModal" class="modal-overlay" style="z-index: 2000;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="customSelectTitle">Pilih Opsi</div>
+      <button class="btn-close" onclick="closeCustomSelect()"><i data-lucide="x"></i></button>
+    </div>
+    <div id="customSelectOptions"></div>
+  </div>
+</div>
+
 <!-- CUSTOM CONFIRM & TOAST -->
 <div id="customConfirm" class="custom-confirm">
   <div class="confirm-box">
@@ -590,6 +678,7 @@
   let fullReportText = "";
   let isProkerCompletedLocked = false;
   let currentEvaluationData = null;
+  let currentSelectCallback = null;
 
   // PENGATURAN HAK AKSES ROLE
   const rolesCanManageTasks = ['admin', 'ketua', 'sekretaris'];
@@ -648,6 +737,149 @@
     }
   }
 
+  // ==========================================
+  // CUSTOM SELECT SYSTEM (v1.5.4)
+  // ==========================================
+  function openCustomSelect(title, options, currentValue, onSelect) {
+    document.getElementById('customSelectTitle').innerText = title;
+    const container = document.getElementById('customSelectOptions');
+    container.innerHTML = '';
+
+    options.forEach(opt => {
+      const isSelected = String(opt.value) === String(currentValue);
+      const div = document.createElement('div');
+      div.className = 'custom-select-option' + (isSelected ? ' selected' : '');
+      
+      const span = document.createElement('span');
+      span.textContent = opt.label;
+      div.appendChild(span);
+      
+      if (isSelected) {
+        const check = document.createElement('i');
+        check.setAttribute('data-lucide', 'check');
+        check.style.cssText = 'width:18px; height:18px; color:var(--primary);';
+        div.appendChild(check);
+      }
+      
+      div.onclick = () => pilihOpsiCustom(opt.value);
+      container.appendChild(div);
+    });
+
+    currentSelectCallback = onSelect;
+    document.getElementById('customSelectModal').style.display = 'flex';
+    lucide.createIcons();
+  }
+
+  function pilihOpsiCustom(value) {
+    if (currentSelectCallback) {
+      const cb = currentSelectCallback;
+      closeCustomSelect();
+      cb(value);
+    }
+  }
+
+  function closeCustomSelect() {
+    document.getElementById('customSelectModal').style.display = 'none';
+    currentSelectCallback = null;
+  }
+
+  function bukaPilihTipeProker() {
+    const current = document.getElementById('prokerTipe').value;
+    openCustomSelect(
+      'Pilih Tipe Program Kerja',
+      [
+        { value: 'Mingguan', label: 'Mingguan' },
+        { value: 'Bulanan', label: 'Bulanan' },
+        { value: 'Insidental', label: 'Insidental (Sekali Jalan)' }
+      ],
+      current,
+      (val) => {
+        document.getElementById('prokerTipe').value = val;
+        document.getElementById('prokerTipeLabel').innerText =
+          val === 'Insidental' ? 'Insidental (Sekali Jalan)' : val;
+      }
+    );
+  }
+
+  function bukaPilihTipeTrx() {
+    const current = document.getElementById('trxTipe').value;
+    openCustomSelect(
+      'Pilih Tipe Transaksi',
+      [
+        { value: 'Pemasukan', label: 'Pemasukan (Masuk)' },
+        { value: 'Pengeluaran', label: 'Pengeluaran (Keluar)' }
+      ],
+      current,
+      (val) => {
+        document.getElementById('trxTipe').value = val;
+        document.getElementById('trxTipeLabel').innerText =
+          val === 'Pemasukan' ? 'Pemasukan (Masuk)' : 'Pengeluaran (Keluar)';
+      }
+    );
+  }
+
+  function bukaPilihPeriode() {
+    const current = document.getElementById('periodeLaporan').value;
+    const labels = {
+      minggu: 'Laporan Minggu Ini',
+      bulan: 'Laporan Bulan Ini',
+      semua: 'Semua Data (Keseluruhan)',
+      kustom: 'Pilih Tanggal Sendiri (Kustom)'
+    };
+    openCustomSelect(
+      'Pilih Periode Laporan',
+      [
+        { value: 'minggu', label: labels.minggu },
+        { value: 'bulan', label: labels.bulan },
+        { value: 'semua', label: labels.semua },
+        { value: 'kustom', label: labels.kustom }
+      ],
+      current,
+      (val) => {
+        document.getElementById('periodeLaporan').value = val;
+        document.getElementById('periodeLaporanLabel').innerText = labels[val];
+        aturTanggalLaporan();
+      }
+    );
+  }
+
+  function bukaPilihProkerAksi() {
+    const current = document.getElementById('aksiProker').value;
+    const options = [{ value: '', label: '-- Pilih Proker --' }];
+    globalProkers.forEach(p => options.push({ value: p.id, label: p.judul }));
+
+    openCustomSelect(
+      'Pilih Program Kerja',
+      options,
+      current,
+      (val) => {
+        document.getElementById('aksiProker').value = val;
+        const selected = globalProkers.find(p => p.id === val);
+        document.getElementById('aksiProkerLabel').innerText = selected ? selected.judul : '-- Pilih Proker --';
+      }
+    );
+  }
+
+  function bukaPilihRole(userId, userName, currentRole) {
+    openCustomSelect(
+      'Ubah Role: ' + userName,
+      [
+        { value: 'anggota', label: 'Anggota' },
+        { value: 'ketua', label: 'Ketua' },
+        { value: 'sekretaris', label: 'Sekretaris' },
+        { value: 'bendahara', label: 'Bendahara' },
+        { value: 'guru', label: 'Guru' },
+        { value: 'mahasiswa', label: 'Mahasiswa' },
+        { value: 'admin', label: 'Admin' }
+      ],
+      currentRole,
+      async (val) => {
+        await ubahRole(userId, val);
+        loadAllUsers();
+      }
+    );
+  }
+
   function setFilterKas(tipe, btnElement) {
     filterKasTipe = tipe;
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -703,23 +935,17 @@
         document.getElementById('msgPassChanged').style.display = 'none';
       }
 
-      // ==========================================
       // PENGATURAN VISIBILITAS MENU BERDASARKAN ROLE
-      // ==========================================
-
-      // 1. Menu Admin (HANYA ADMIN)
       if (currentUserRole === 'admin') {
         document.getElementById('navAdmin').style.display = 'flex';
         loadAllUsers();
       }
 
-      // 2. Menu Keuangan (Admin, Bendahara, Mahasiswa - View Only)
       if (['admin', 'bendahara', 'mahasiswa'].includes(currentUserRole)) {
         document.getElementById('navKeuangan').style.display = 'flex';
         loadDataKeuangan();
       }
 
-      // 3. Tombol Evaluasi (Admin, Mahasiswa, Guru)
       if (rolesCanEvaluate.includes(currentUserRole)) {
         document.getElementById('btnBeriNilai').style.display = 'flex';
         document.getElementById('btnCetakLaporan').style.display = 'block';
@@ -773,11 +999,19 @@
     const listProker = document.getElementById('prokerList');
     const dashProker = document.getElementById('dashProkerList');
     const dashTotal = document.getElementById('dashTotalProker');
-    const dropdownProker = document.getElementById('aksiProker');
-    
+
     listProker.innerHTML = '';
     dashProker.innerHTML = '';
-    dropdownProker.innerHTML = '<option value="">-- Pilih Proker --</option>';
+
+    // Sinkronisasi label custom select aksiProker (karena <select> diganti div + hidden input)
+    const currentAksiId = document.getElementById('aksiProker').value;
+    const currentAksiData = globalProkers.find(p => p.id === currentAksiId);
+    if (currentAksiData) {
+      document.getElementById('aksiProkerLabel').innerText = currentAksiData.judul;
+    } else {
+      document.getElementById('aksiProker').value = '';
+      document.getElementById('aksiProkerLabel').innerText = '-- Pilih Proker --';
+    }
 
     if (prokers && prokers.length > 0) {
       dashTotal.innerText = prokers.length;
@@ -805,7 +1039,6 @@
         }
 
         let actionBtns = '';
-        // HANYA ADMIN, KETUA, SEKRETARIS YANG BISA EDIT/HAPUS PROKER
         if (rolesCanManageTasks.includes(currentUserRole)) {
            actionBtns = `
             <div class="aksi-container">
@@ -836,8 +1069,6 @@
         `;
 
         if(index < 3) dashProker.innerHTML += `<div class="proker-card"><div class="proker-title">${p.judul}</div><div class="progress-container"><div class="progress-bar" style="width: ${percent}%;"></div></div><div class="proker-meta"><span>${statusText}</span> <span>${percent}%</span></div></div>`;
-        
-        dropdownProker.innerHTML += `<option value="${p.id}">${p.judul}</option>`;
       });
     } else {
       dashTotal.innerText = "0";
@@ -1003,6 +1234,7 @@
     document.getElementById('prokerJudul').value = "";
     document.getElementById('prokerDesk').value = "";
     document.getElementById('prokerTipe').value = "Insidental";
+    document.getElementById('prokerTipeLabel').innerText = "Insidental (Sekali Jalan)";
     document.getElementById('prokerMulai').value = new Date().toISOString().split('T')[0];
     document.getElementById('prokerTanggal').value = "";
     document.getElementById('modalProker').style.display = 'flex'; 
@@ -1015,7 +1247,12 @@
       document.getElementById('editProkerId').value = data.id;
       document.getElementById('prokerJudul').value = data.judul;
       document.getElementById('prokerDesk').value = data.deskripsi || "";
-      document.getElementById('prokerTipe').value = data.tipe_proker || "Insidental";
+      
+      const tipeVal = data.tipe_proker || "Insidental";
+      document.getElementById('prokerTipe').value = tipeVal;
+      document.getElementById('prokerTipeLabel').innerText =
+        tipeVal === 'Insidental' ? 'Insidental (Sekali Jalan)' : tipeVal;
+      
       document.getElementById('prokerMulai').value = data.tanggal_mulai || "";
       document.getElementById('prokerTanggal').value = data.target_selesai || "";
       document.getElementById('modalProker').style.display = 'flex'; 
@@ -1087,7 +1324,6 @@
         const isMasuk = t.tipe === 'Pemasukan';
 
         let actionBtns = '';
-        // HANYA ADMIN DAN BENDAHARA YANG BISA EDIT/HAPUS KAS
         if (rolesCanManageFinance.includes(currentUserRole)) {
           actionBtns = `
             <button onclick="bukaModalEditKeuangan('${t.id}')" style="background:none; border:none; color:var(--biru); cursor:pointer; margin-left:5px;"><i data-lucide="edit" style="width:16px;"></i></button>
@@ -1119,6 +1355,7 @@
     document.getElementById('titleModalKeuangan').innerText = "Catat Transaksi Baru";
     document.getElementById('editTrxId').value = "";
     document.getElementById('trxTipe').value = "Pemasukan";
+    document.getElementById('trxTipeLabel').innerText = "Pemasukan (Masuk)";
     document.getElementById('trxJumlah').value = "";
     document.getElementById('trxKet').value = "";
     document.getElementById('trxTanggal').value = new Date().toISOString().split('T')[0];
@@ -1131,6 +1368,8 @@
         document.getElementById('titleModalKeuangan').innerText = "Edit Transaksi";
         document.getElementById('editTrxId').value = data.id;
         document.getElementById('trxTipe').value = data.tipe;
+        document.getElementById('trxTipeLabel').innerText =
+          data.tipe === 'Pemasukan' ? 'Pemasukan (Masuk)' : 'Pengeluaran (Keluar)';
         document.getElementById('trxJumlah').value = data.jumlah;
         document.getElementById('trxKet').value = data.keterangan;
         document.getElementById('trxTanggal').value = data.tanggal;
@@ -1258,11 +1497,9 @@
           day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit'
         }) : '-';
 
-        // ADMIN, MAHASISWA, GURU BISA VALIDASI
         const canValidate = rolesCanEvaluate.includes(currentUserRole) && isMenunggu;
         const btnValidasi = canValidate ? `<button class="btn-validasi" onclick="validasiLaporan('${f.id}')">Validasi Laporan</button>` : '';
         
-        // HANYA ADMIN ATAU PEMILIK LAPORAN YANG BISA HAPUS
         const canDelete = (currentUserRole === 'admin' || f.user_id === currentUserId);
         const btnHapus = canDelete ? `<button onclick="hapusLaporan('${f.id}')" style="background:none; border:none; color:var(--merah); cursor:pointer; position:absolute; top:12px; right:12px;"><i data-lucide="trash-2" style="width:16px;"></i></button>` : '';
 
@@ -1328,7 +1565,10 @@
       if (dbError) throw dbError;
 
       showToast("Laporan Aksi berhasil dikirim!");
-      document.getElementById('aksiDesk').value = ''; fileInput.value = '';
+      document.getElementById('aksiDesk').value = ''; 
+      fileInput.value = '';
+      document.getElementById('aksiProker').value = '';
+      document.getElementById('aksiProkerLabel').innerText = '-- Pilih Proker --';
       tutupModalAksi(); loadFeedAksi(); 
 
     } catch (err) {
@@ -1482,7 +1722,7 @@
     if(error) {
         showToast("Gagal menyimpan evaluasi: " + error.message, "error");
     } else {
-        showToast(id ? "Evaluasi berhasil diperbarui!" : "Evaluasi berhasil disimpan!");
+                showToast(id ? "Evaluasi berhasil diperbarui!" : "Evaluasi berhasil disimpan!");
         tutupModalEvaluasi();
         loadEvaluasi(); 
     }
@@ -1511,6 +1751,10 @@
     document.getElementById('hasilLaporanBox').style.display = 'none';
     document.getElementById('btnCopyLaporan').style.display = 'none';
     document.getElementById('hasilLaporanBox').innerText = '';
+    
+    document.getElementById('periodeLaporan').value = 'minggu';
+    document.getElementById('periodeLaporanLabel').innerText = 'Laporan Minggu Ini';
+    
     aturTanggalLaporan(); 
   }
 
@@ -1665,20 +1909,11 @@
   // --- FUNGSI ADMIN PANEL ---
   async function loadAllUsers() {
     const { data: users } = await supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
-    const listContainer = document.getElementById('userList'); listContainer.innerHTML = '';
+    const listContainer = document.getElementById('userList'); 
+    listContainer.innerHTML = '';
 
     if (users && users.length > 0) {
       users.forEach(u => {
-        let roleOptions = `
-          <option value="anggota" ${u.role === 'anggota' ? 'selected' : ''}>Anggota</option>
-          <option value="ketua" ${u.role === 'ketua' ? 'selected' : ''}>Ketua</option>
-          <option value="sekretaris" ${u.role === 'sekretaris' ? 'selected' : ''}>Sekretaris</option>
-          <option value="bendahara" ${u.role === 'bendahara' ? 'selected' : ''}>Bendahara</option>
-          <option value="guru" ${u.role === 'guru' ? 'selected' : ''}>Guru</option>
-          <option value="mahasiswa" ${u.role === 'mahasiswa' ? 'selected' : ''}>Mahasiswa</option>
-          <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
-        `;
-
         const isActive = u.is_active !== false; 
         const btnStatusClass = isActive ? 'aktif' : 'nonaktif';
         const btnStatusText = isActive ? 'Aktif' : 'Nonaktif';
@@ -1696,6 +1931,10 @@
           ? `<img src="${u.avatar_url}">` 
           : `${(u.full_name || "U").charAt(0).toUpperCase()}`;
 
+        // Escape single quotes di nama untuk keamanan onclick
+        const safeName = (u.full_name || 'User').replace(/'/g, "\\'");
+        const roleLabel = u.role ? (u.role.charAt(0).toUpperCase() + u.role.slice(1)) : 'Anggota';
+
         listContainer.innerHTML += `
           <div class="user-item ${userItemClass}">
             <div class="user-info">
@@ -1706,7 +1945,9 @@
               </div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-end;">
-              <select class="user-role-select" onchange="ubahRole('${u.id}', this.value)">${roleOptions}</select>
+              <div class="user-role-badge" onclick="bukaPilihRole('${u.id}', '${safeName}', '${u.role}')">
+                ${roleLabel}
+              </div>
               <div style="display: flex; gap: 5px; align-items: center;">
                 <button class="btn-status ${btnStatusClass}" onclick="toggleUserStatus('${u.id}', ${isActive})" ${disableBtn}>${btnStatusText}</button>
                 ${btnReset}
